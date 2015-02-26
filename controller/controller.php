@@ -1,4 +1,15 @@
 <?php
+	// connect to database
+	try {
+		$DBUSER = 'root';
+		$DBPASS = '';
+		$DSN = "mysql:host=localhost;dbname=cs75finance;";
+		$pdo = new PDO($DSN, $DBUSER, $DBPASS);
+	} catch (PDOException $e) {
+		//echo $e-getCode();
+	}
+
+
 	function render($template, $data=array()) {
 		$path = __DIR__ . '/../templates/' . $template . '.php';
 		if (file_exists($path)) {
@@ -30,6 +41,35 @@
 	function confirmpassword($pass, $conf) {
 		if ($pass !== $conf) {
 			return 'passwords do not match';
+		}
+		return false;
+	}
+
+	function finduser($username) {
+		global $pdo;
+		$query = 'SELECT username FROM users WHERE username=:username';
+		try {
+			$stmt = $pdo->prepare($query);
+			$stmt->bindValue(':username', $username);
+			$stmt->execute();
+			return $stmt->rowCount() > 0;
+		} catch (PDOException $e) {
+			return $e->getCode();
+		}
+		return false;
+	}
+
+	function register($username, $password) {
+		global $pdo;
+		$query = 'INSERT INTO users (username, userpass) VALUES (:username, :password)';
+		$password = password_hash($password, PASSWORD_DEFAULT);
+		try {
+			$stmt = $pdo->prepare($query);
+			$stmt->bindValue(':username', $username);
+			$stmt->bindValue(':password', $password);
+			return $stmt->execute();
+		} catch (PDOException $e) {
+			return $e->getCode();
 		}
 		return false;
 	}
