@@ -1,24 +1,46 @@
 <?php
+	
 	require_once('../controller/controller.php');
-	render('header', array('title' => 'Log in', 'message' => 'Please login'));
-?>
-	<div class="form-group">
-		<form method="post">
-			<div class="col-md-3"></div>
-			<div class="col-md-6 center">
-				<label for="username">Username</label>
-				<input type="text" name="username" id="username" class="form-control" autofocus />
-				<span class="help-block">Please enter your login name</span><br />
-				<label for="password">Password</label>
-				<input type="password" name="password" id="password" class="form-control" />
-				<span class="help-block">Please enter you password</span><br />
-				<button type="submit" class="btn btn-primary btn-block" class="form-control" >Login</button>
-				<br />
-				<p>If you have no account<br /><a href="register.php">Register</a></p>
-			</div>
-			<div class="col-md-3"></div>
-		</form>
-	</div>
-<?php
+	
+	// select page to show
+	if (isset($_SESSION['username'])) {
+		header('Location:main.php');
+	} 
+	
+	if (isset($_GET['form']) and $_GET['form'] == 'register') {
+		$checkname = $checkpassword = $confirmpassword = '';
+		$hidden = 'hidden';
+		if (isset($_POST['username'])) {
+			$checkname = checkname($_POST['username']);
+			if (isset($_POST['password'])) {
+				$checkpassword = checkpassword($_POST['password']);
+				if (isset($_POST['password_conf'])) {
+					$confirmpassword = confirmpassword($_POST['password'], $_POST['password_conf']);
+					if ($checkname or $checkpassword or $confirmpassword) {
+						$hidden = '';
+					} else {
+						if (register($_POST['username'], $_POST['password'])) {
+							$_SESSION['username'] = $_POST['username'];
+							header('Location:main.php');
+						} else {
+							echo 'can\'t register now, try again later';
+						}
+					}
+				}
+			}
+		}
+		$alerts = array('name' => $checkname, 'pass' => $checkpassword, 'conf' => $confirmpassword, 'hidden' => $hidden);
+		$title = $message = 'Registration form';
+		$body = 'register';
+	} else {
+		$title = 'Login form';
+		$message = 'Please login';
+		$body = 'login';
+		$alerts = array();
+	}
+
+	// build page
+	render('header', array('title' => $title, 'message' => $message));
+	render($body, $alerts);
 	render('footer');
 ?>

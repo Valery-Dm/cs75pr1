@@ -8,10 +8,10 @@
 		<title><?= 'CS75 finance: ' . htmlspecialchars($title); ?></title>
 	</header>
 	<body>
+	<div class="wrap">
 		<div class="container">
 			<div class="center top">
-				<h1>C$75 finance</h1>
+				<h1 class="sitename">CS75 finance</h1>
 				<p>___________________</p>
 				<p class="lead"><?= $message; ?></p>
 			</div>
-
