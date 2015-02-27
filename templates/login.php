@@ -10,7 +10,7 @@
 			<label for="password">Password</label>
 			<input type="password" name="password" id="password" class="form-control" />
 			<span class="help-block">Please enter you password</span><br />
-			<button type="submit" class="btn btn-primary btn-block" class="form-control" >Login</button>
+			<button type="submit" class="btn btn-primary btn-block form-control" >Login</button>
 			<br />
 			<p>If you have no account<br /><a href="../html/index.php?form=register">Register</a></p>
 		</div>

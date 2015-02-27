@@ -21,7 +21,7 @@
 			<input type="password" name="password_conf" id="password_conf" class="form-control" />
 			<?= "<span class='alerts $hidden'>$conf</span>" ?>
 			<span class="help-block">Retype you password</span><br />
-			<button type="submit" class="btn btn-primary btn-block" class="form-control" >Register</button>
+			<button type="submit" class="btn btn-primary btn-block form-control" >Register</button>
 			<br />
 			<p>If you already have an account<br /><a href="../html/index.php">Login</a></p>
 		</div>

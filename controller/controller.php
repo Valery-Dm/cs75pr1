@@ -51,10 +51,12 @@
 	function loguserin($username, $password) {
 		$query = 'SELECT userpass FROM users WHERE username=:username';
 		$result = dbquery($query, array(':username' => $username));
-		if ($result == 2 or !is_array($result)) {
+		if ($result == 2) {
 			return 2;
+		} elseif (!is_array($result)) {
+			 return false;
 		} else {
-			return password_verify($password, $result['userpass']); 
+			return password_verify($password, $result['userpass']);
 		}
 	}
 
