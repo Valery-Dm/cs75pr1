@@ -1,14 +1,5 @@
 <?php
-	// connect to database
-	try {
-		$DBUSER = 'root';
-		$DBPASS = '';
-		$DSN = "mysql:host=localhost;dbname=cs75finance;";
-		$pdo = new PDO($DSN, $DBUSER, $DBPASS);
-	} catch (PDOException $e) {
-		//echo $e-getCode();
-	}
-
+	require_once('../model/dbquery.php');
 
 	function render($template, $data=array()) {
 		$path = __DIR__ . '/../templates/' . $template . '.php';
@@ -45,33 +36,26 @@
 		return false;
 	}
 
-	function finduser($username) {
-		global $pdo;
+	function finduser($username){
 		$query = 'SELECT username FROM users WHERE username=:username';
-		try {
-			$stmt = $pdo->prepare($query);
-			$stmt->bindValue(':username', $username);
-			$stmt->execute();
-			return $stmt->rowCount() > 0;
-		} catch (PDOException $e) {
-			return $e->getCode();
-		}
-		return false;
+		return dbquery($query, array(':username' => $username));
 	}
 
 	function register($username, $password) {
-		global $pdo;
 		$query = 'INSERT INTO users (username, userpass) VALUES (:username, :password)';
 		$password = password_hash($password, PASSWORD_DEFAULT);
-		try {
-			$stmt = $pdo->prepare($query);
-			$stmt->bindValue(':username', $username);
-			$stmt->bindValue(':password', $password);
-			return $stmt->execute();
-		} catch (PDOException $e) {
-			return $e->getCode();
+		return dbquery($query, array(':username' => $username, 
+									 ':password' => $password)) == 1;
+	}
+
+	function loguserin($username, $password) {
+		$query = 'SELECT userpass FROM users WHERE username=:username';
+		$result = dbquery($query, array(':username' => $username));
+		if ($result == 2 or !is_array($result)) {
+			return 2;
+		} else {
+			return password_verify($password, $result['userpass']); 
 		}
-		return false;
 	}
 
 	session_start();
