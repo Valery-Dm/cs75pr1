@@ -1,5 +1,6 @@
 <?php
 	require_once('../model/dbquery.php');
+	require_once('../model/call_api.php');
 
 	function render($template, $data=array()) {
 		$path = __DIR__ . '/../templates/' . $template . '.php';
@@ -77,6 +78,7 @@
 		} else {
 			$_SESSION['userid'] = $result['userid'];
 			$_SESSION['username'] = $result['username'];
+			$_SESSION['cash'] = $result['cash'];
 			return 'login';
 		}
 	}
@@ -90,6 +92,30 @@
 			return 'Can\'t get your data right now, try to login later';
 		} else {
 			return $result;
+		}
+	}
+
+	function getjson($type, $query) {
+		if ($type == 'quotes') {
+			if (!preg_match('/[^a-zA-Z]/', $query)) {
+				$url = "http://download.finance.yahoo.com/d/
+						quotes.json?f=snl1&s=$query";
+				$result = call_api($url);
+				$count = count($result);
+				if (!$result or $count == 1) {
+					return 'Can\'t get quotes now';
+				} elseif (end($result) == '0.00') {
+					return 'invalid quote';
+				}
+				if ($count == 4) {
+					$name = $result[1] . $result[2];
+				} else {
+					$name = $result[1];
+				}
+				return array($name, $result[$count - 1]);
+			} else {
+				return 'invalid quote';
+			}
 		}
 	}
 

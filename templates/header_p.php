@@ -23,7 +23,7 @@
 				  <span class="icon-bar"></span>
 				  <span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand sitename" href="main.php">CS75 finance</a>
+				<a class="navbar-brand sitename" href="main.php?page=Portfolio">CS75 finance</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse" >
 				<ul class="nav navbar-nav navbar-right">
@@ -50,7 +50,7 @@
 						}
 					?>
 					<li>
-						<a href="../templates/logout.php">Logout</a>
+						<a href="../controller/logout.php">Logout</a>
 					</li>
 				</ul>
 			</div>

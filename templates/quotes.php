@@ -2,12 +2,9 @@
 	<form method="post">
 		<div class="col-md-3"></div>
 		<div class="col-md-6 center">
-			<div class="result">
-				<label for="price"><?= $pricelabel; ?></label>
-				<input type="text" name="price" id="price" 
-					   value="<?= $price; ?>"/>
+			<div class="result <?= $hidden_d; ?>">
+				<p for="qprice"><?= $qprice; ?></p>
 			</div>
-			<label for="quotes">Quote</label>
 			<input type="text" name="quotes" id="quotes" class="form-control" 
 				   value="<?= (isset($_POST['quotes'])) ? $_POST['quotes'] : '' ?>" autofocus />
 			<?= "<span class='alerts $hidden_a'>$data</span>" ?>

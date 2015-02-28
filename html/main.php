@@ -7,18 +7,31 @@
 	
 	// set initial variables
 	$data = '';
-	$select = '';
 	$hidden_a = 'hidden';
 	$hidden_d = '';
-	$price = '';
-	$pricelabel = '';
-	
+	$qprice = '';
+	$page = '';
+
 	if (isset($_GET['page'])) {
 		$page = $_GET['page'];
 		$body = strtolower($page);
 		if ($page == 'Quotes') {
-			$title = 'Get quotes';
-			$message = 'Get quotes';
+			$title = $message = 'Get quotes';
+			$hidden_d = 'hidden';
+			if (isset($_POST['quotes'])) {
+				$result = getjson('quotes', $_POST['quotes']);
+				if (is_string($result)) {
+					$data = $result;
+					$hidden_a = '';
+				} else {
+					$hidden_d = '';
+					$qprice = 'Current price for '
+									. $result[0] 
+									. ' is <strong>$'
+									. $result[1]
+									. '</strong>';
+				}
+			}
 		} elseif ($page == 'Portfolio') {
 			$data = getuserinfo($_SESSION['userid']);
 			if (!is_array($data)) {
@@ -26,12 +39,15 @@
 				$hidden_d = 'hidden';
 			}
 			$title = $page;
-			$message = 'Welcome, ' . $_SESSION['username'];
+			$message = 'Welcome, ' 
+						. $_SESSION['username'] 
+						. ',<br /> your deposit is $' 
+						. $_SESSION['cash'];
 		} else {
-			$title = '404';
-			$message = '';
-			$body = '404';
+			$title = $body = $message = '404';
 		}
+	} else {
+		$title = $body = $message = '404';
 	}
 
 	// build page
@@ -43,8 +59,7 @@
 											 'Buy', 
 											 'Sell')));
 	render($body, array('data' => $data,  
-						'price' => $price, 
-						'pricelabel' => $pricelabel,
+						'qprice' => $qprice, 
 					    'hidden_a' => $hidden_a, 
 					    'hidden_d' => $hidden_d));
 	render('footer');
