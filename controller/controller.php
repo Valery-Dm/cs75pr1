@@ -38,26 +38,51 @@
 
 	function finduser($username){
 		$query = 'SELECT username FROM users WHERE username=:username';
-		return dbquery($query, array(':username' => $username));
+		$finduser = dbquery($query, array(':username' => $username));
+		if ($finduser == 2) {
+			// if we have a 'connect to database' error on usercheck
+			return 'can\'t register now, try again later';
+		} elseif (is_array($finduser)) {
+			return 'Username already exists, choose another one';
+		} else {
+			return 'nouser';
+		}
 	}
 
 	function register($username, $password) {
-		$query = 'INSERT INTO users (username, userpass) VALUES (:username, :password)';
-		$password = password_hash($password, PASSWORD_DEFAULT);
-		return dbquery($query, array(':username' => $username, 
-									 ':password' => $password)) == 1;
+		$query = 'INSERT INTO users (username, userpass) 
+				  VALUES (:username, :password)';
+		$password_hash = password_hash($password, PASSWORD_DEFAULT);
+		$register = dbquery($query, array(':username' => $username, 
+										  ':password' => $password_hash));
+		if (!$register) {
+			// if we have a 'connect to database' error on register
+			return 'can\'t register now, try again later';
+		} else {
+			// try to login
+			$loguserin = loguserin($username, $password);
+			return $loguserin;
+		}
 	}
 
 	function loguserin($username, $password) {
-		$query = 'SELECT userpass FROM users WHERE username=:username';
+		$query = 'SELECT * FROM users WHERE username=:username';
 		$result = dbquery($query, array(':username' => $username));
 		if ($result == 2) {
-			return 2;
-		} elseif (!is_array($result)) {
-			 return false;
+			// in case of db error
+			return 'Can\'t login now, try again later';
+		} elseif (!is_array($result) or 
+				  !password_verify($password, $result['userpass'])) {
+			return 'Wrong user name or password';
 		} else {
-			return password_verify($password, $result['userpass']);
+			$_SESSION['userid'] = $result['userid'];
+			$_SESSION['username'] = $result['username'];
+			return 'login';
 		}
+	}
+
+	function getuserinfo($username) {
+		$query = 'SELECT * FROM shares WHERE ';
 	}
 
 	session_start();
