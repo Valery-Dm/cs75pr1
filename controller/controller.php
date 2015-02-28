@@ -81,8 +81,16 @@
 		}
 	}
 
-	function getuserinfo($username) {
-		$query = 'SELECT * FROM shares WHERE ';
+	function getuserinfo($userid) {
+		$query = 'SELECT * FROM shares WHERE sharesuser=:userid';
+		$result = dbquery($query, array(':userid' => $userid));
+		if (!$result) {
+			return 'You have no shares in your portfolio';
+		} elseif ($result == 2) {
+			return 'Can\'t get your data right now, try to login later';
+		} else {
+			return $result;
+		}
 	}
 
 	session_start();

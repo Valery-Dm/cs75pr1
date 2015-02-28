@@ -41,3 +41,8 @@ body, html{
 	margin-top: 10px;
 	display: block;
 }
+.result{
+	margin-bottom: 20px;
+	padding: 10px;
+	background-color: #ddd;
+}

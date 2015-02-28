@@ -11,8 +11,8 @@
 	<body>
 <div class="wrap">	
 <div class="container">
-
-	<div class="navbar navbar-default">
+	
+	<div class="navbar navbar-default top">
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed" 
@@ -27,19 +27,28 @@
 			</div>
 			<div id="navbar" class="navbar-collapse collapse" >
 				<ul class="nav navbar-nav navbar-right">
-              		<li class="active">
-						<a href="main.php">Portfolio 
-						<span class="sr-only">(current)</span></a>
-					</li>
-					<li>
-						<a href="">Get quotes</a>
-					</li>
-					<li>
-						<a href="">Buy shares</a>
-					</li>
-					<li>
-						<a href="">Sell shares</a>
-					</li>
+              		<?php 	
+						foreach ($menu as $item) {
+							if ($item == $select) { 
+					?>
+								<li class="active">
+									<a href="main.php?page=<?= $item; ?>">
+										<?= $item; ?>
+										<span class="sr-only">(current)</span>
+									</a>
+								</li>
+					<?php
+							} else { 
+					?>
+								<li>
+									<a href="main.php?page=<?= $item; ?>">
+										<?= $item; ?>
+									</a>
+								</li>
+					<?php
+							}
+						}
+					?>
 					<li>
 						<a href="../templates/logout.php">Logout</a>
 					</li>

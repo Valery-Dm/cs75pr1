@@ -5,7 +5,7 @@
 	// select page to show
 	if (isset($_SESSION['userid'])) {
 		// move registered user to his portfolio
-		header('Location:main.php');
+		header('Location:main.php?page=Portfolio');
 	} 
 	// register page functionality here
 	if (isset($_GET['form']) and $_GET['form'] == 'register') {
@@ -29,7 +29,7 @@
 							$checkname = register($_POST['username'], 
 												  $_POST['password']);
 							if ($checkname == 'login') {
-								header('Location:main.php');
+								header('Location:main.php?page=Portfolio');
 							}
 						}
 					}
@@ -55,7 +55,7 @@
 				// try to log user in
 				$error = loguserin($_POST['username'], $_POST['password']);
 				if ($error == 'login') {
-					header('Location:main.php');
+					header('Location:main.php?page=Portfolio');
 				}
 			}
 			$hidden = '';
