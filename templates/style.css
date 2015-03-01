@@ -43,10 +43,7 @@ body, html{
 }
 .result{
 	margin-bottom: 20px;
-	padding: 10px;
+	padding: 20px;
 	border: 2px solid #ddd;
 	border-radius: 5px;
-}
-.result p{
-	margin:10px;
 }

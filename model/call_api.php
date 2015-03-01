@@ -4,7 +4,7 @@
 		if (!$call) {
 			return false;
 		}
-		// Yahoo returns string instead of json
+		
 		return explode(',', $call);
 	}
 ?>

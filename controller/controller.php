@@ -95,16 +95,51 @@
 		}
 	}
 
+	function buyshares($share=array()) {
+		
+		// first try to minus total price from user's account
+		$charge_query = 'UPDATE users SET cash=cash-:total WHERE userid=:userid';
+		
+		$total = $share['total'] * $share['price'];
+		$charge = dbquery($charge_query, array(':total' => $total, 
+											   ':userid' => $_SESSION['userid']));
+		if (!$charge) {
+			return 'can\'t buy now, try again later';
+		}
+		// then try to add bought shares
+		$query = 'INSERT INTO shares (sharesname, sharesq, sharesprice, sharesuser)
+				  VALUES (:name, :total, :price, :userid)';
+		$buy = dbquery($query, array(':name' => $share['name'], 
+									 ':total' => $share['total'], 
+									 ':price' => $share['price'], 
+									 ':userid' => $_SESSION['userid']));
+		if (!$buy) {
+			// return spent money
+			$return_query = 'UPDATE users SET cash=cash+:total WHERE userid=:userid';
+			$return = dbquery($charge_query, array(':total' => $total));
+			if (!$return) { /* send an email to admin */ }
+			return 'can\'t buy now, try again later';
+		} else {
+			$_SESSION['cash'] = $_SESSION['cash'] - $total;
+			return 'You\'ve bought ' 
+						. $share['total'] . ' shares of ' 
+						. $share['name'];
+		}
+		
+	}
+
 	function getjson($type, $query) {
 		if ($type == 'quotes') {
-			if (!preg_match('/[^a-zA-Z]/', $query)) {
+			if (preg_match('/[^a-zA-Z]/', $query) or $query == '') {
+				return 'invalid quote';
+			} else {
 				$url = "http://download.finance.yahoo.com/d/
 						quotes.json?f=snl1&s=$query";
 				$result = call_api($url);
 				$count = count($result);
 				if (!$result or $count == 1) {
 					return 'Can\'t get quotes now';
-				} elseif (end($result) == '0.00') {
+				} elseif ($result[$count - 1] == 0.00) {
 					return 'invalid quote';
 				}
 				if ($count == 4) {
@@ -113,8 +148,6 @@
 					$name = $result[1];
 				}
 				return array($name, $result[$count - 1]);
-			} else {
-				return 'invalid quote';
 			}
 		}
 	}
