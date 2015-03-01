@@ -29,12 +29,26 @@
 			if ($query[0] == 'S') {
 				// for SELECT queries
 				if ($stmt->execute()) {
-					return $stmt->fetch(PDO::FETCH_ASSOC);
+					return $stmt->fetchAll();
 				} else {
+					// log errors
+					fwrite($file, $time->format('c') 
+							   . '>dbquery:select> ' 
+							   . "can't get data\n");
+					fclose($file);
 					return 2;
 				}
 			}
-			return $stmt->execute();
+			$result = $stmt->execute();
+			if (!$result) {
+				// log errors
+				fwrite($file, $time->format('c') 
+						   . '>dbquery:change> ' 
+						   . "can't write into db\n");
+				fclose($file);
+				return $result;
+			}
+			return $result;
 
 		} catch (PDOException $e) {
 			// log errors
@@ -45,6 +59,10 @@
 			return false;
 		}
 		// something wrong if function can reach here
+		fwrite($file, $time->format('c') 
+				   . '>dbquery:unknown> ' 
+				   . "something went wrong\n");
+		fclose($file);
 		return false;
 	}
 	

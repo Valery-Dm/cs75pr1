@@ -32,8 +32,8 @@
 							if ($item == $select) { 
 					?>
 								<li class="active">
-									<a href="main.php?page=<?= $item; ?>">
-										<?= $item; ?>
+									<a href="main.php?page=<?= htmlspecialchars($item); ?>">
+										<?= htmlspecialchars($item); ?>
 										<span class="sr-only">(current)</span>
 									</a>
 								</li>
@@ -41,8 +41,8 @@
 							} else { 
 					?>
 								<li>
-									<a href="main.php?page=<?= $item; ?>">
-										<?= $item; ?>
+									<a href="main.php?page=<?= htmlspecialchars($item); ?>">
+										<?= htmlspecialchars($item); ?>
 									</a>
 								</li>
 					<?php
@@ -56,4 +56,4 @@
 			</div>
 		</div>
 	</div>
-	<p class="lead center"><?= $message; ?></p>
+	<p class="lead center"><?= htmlspecialchars($message); ?></p>

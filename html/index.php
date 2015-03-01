@@ -1,6 +1,6 @@
 <?php
 	
-	require_once('../controller/controller.php');
+	require_once('../controller/login.php');
 	
 	// select page to show
 	if (isset($_SESSION['userid'])) {

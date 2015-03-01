@@ -4,7 +4,8 @@
 		<div class="col-md-6 center">
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" class="form-control" 
-				   value="<?= (isset($_POST['username'])) ? $_POST['username'] : '' ?>" autofocus />
+				   value="<?= (isset($_POST['username'])) ? 
+					htmlspecialchars($_POST['username']) : '' ?>" autofocus />
 			<?= "<span class='alerts $hidden'>$name</span>" ?>
 			<span class="help-block">Choose your unique login name.<br /> 
 				It must be single word 3 to 10 characters long.<br />

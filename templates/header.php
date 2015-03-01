@@ -14,5 +14,5 @@
 			<div class="center top">
 				<h1 class="sitename">CS75 finance</h1>
 				<p>___________________</p>
-				<p class="lead"><?= $message; ?></p>
+				<p class="lead"><?= htmlspecialchars($message); ?></p>
 			</div>

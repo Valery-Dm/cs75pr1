@@ -16,19 +16,21 @@
 			if (isset($_POST['quotes'])) {
 				$queries = array('quotes' => $_POST['quotes']);
 			} elseif (isset($_POST['buytotal']) and $_POST['buytotal'] > 0) {
-				$queries = array('name' => $_POST['buyname'], 
+				$queries = array('quote' => $_POST['buyquote'], 
+								 'name' => $_POST['buyname'], 
 								 'total' => $_POST['buytotal'], 
 								 'price' => $_POST['buyprice']);
 			}
 			$data = quotes($queries);
-		} elseif ($page == 'sell') {
+		} elseif ($page == 'Sell') {
 			$title = $message = 'Here you can sell your shares';
+			$data = shares();
 		} elseif ($page == 'Portfolio') {
 			$data = getuserinfo($_SESSION['userid']);
 			$title = $page;
 			$message = 'Welcome, ' 
 								. $_SESSION['username'] 
-								. ',<br /> your deposit is $' 
+								. ', your deposit is $' 
 								. $_SESSION['cash'];
 		} else {
 			$title = $body = $message = '404';
