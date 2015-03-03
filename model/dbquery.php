@@ -2,72 +2,11 @@
 
 	/*
 	* Handles all database queries.
-	* Takes query string and parameters array as arguments.
+	* Takes several queries and their parameters.
+	* Locks DB for all queries and roll changes back on any error.
+	* Also trucks error records to a log-file.
 	*/
-	function dbquery($query, $params = array()) {
-
-		// create time object
-		$time = new DateTime('NOW');
-
-		// open log file
-		$file = fopen('../model/errors.log', 'a');
-
-		// connect to database
-		try {
-
-			$DBUSER = 'lampp';
-			$DBPASS = 'serveradmin';
-			$DSN = "mysql:host=localhost;dbname=cs75finance;";
-			$pdo = new PDO($DSN, $DBUSER, $DBPASS);
-			// prepare statement
-			$stmt = $pdo->prepare($query);
-			foreach ($params as $param => $val) {
-				$stmt->bindValue($param, $val);
-			}
-
-			// execute and return resul
-			if ($query[0] == 'S') {
-				// for SELECT queries
-				if ($stmt->execute()) {
-					return $stmt->fetchAll();
-				} else {
-					// log errors
-					fwrite($file, $time->format('c') 
-							   . '>dbquery:select> ' 
-							   . "can't get data\n");
-					fclose($file);
-					return 2;
-				}
-			}
-			$result = $stmt->execute();
-			if (!$result) {
-				// log errors
-				fwrite($file, $time->format('c') 
-						   . '>dbquery:change> ' 
-						   . "can't write into db\n");
-				fclose($file);
-				return $result;
-			}
-			return $result;
-
-		} catch (PDOException $e) {
-			// log errors
-			fwrite($file, $time->format('c') 
-					   . '>dbquery:code> ' 
-					   . $e->getCode() . "\n");
-			fclose($file);
-			return false;
-		}
-		// something wrong if function can reach here
-		fwrite($file, $time->format('c') 
-				   . '>dbquery:unknown> ' 
-				   . "something went wrong\n");
-		fclose($file);
-		return false;
-	}
-	
-
-	function dbquery1($queries, $params = array()) {
+	function dbquery($queries, $params = array()) {
 
 		// create time object
 		$time = new DateTime('NOW');
@@ -85,8 +24,8 @@
 			// lock db
 			$pdo->beginTransaction();
 			$result = 1;
-			$error = 0;
-			
+			$error = false;
+			$error_s = 1;
 			// execute all queries
 			for ($index = 0, $lenght = count($queries); 
 				 $index < $lenght; $index++) {
@@ -108,8 +47,8 @@
 								   . '>dbquery:select> ' 
 								   . "can't get data\n");
 						fclose($file);
-						// error mark
-						$error = 1;
+						// error mark for read db
+						$error_s = 2;
 					}
 				} else {
 					if (!$stmt->execute()) {
@@ -119,18 +58,22 @@
 								   . "can't write into db\n");
 						fclose($file);
 						// error mark
-						$error = 1;
+						$error = true;
 					}
 				}
 			}
-			if ($error == 1) {
+			if ($error) {
 				$pdo->rollBack();
 				return false;
+			} elseif ($error_s == 2) {
+				// no need to roll back SELECT queries
+				$pdo->commit();
+				return $error;
 			}
 			
 			// commit on success
 			$pdo->commit();
-			// return data for 'select' or 1
+			// return data for SELECT or 1 for others
 			return $result;
 		} catch (PDOException $e) {
 			// log errors

@@ -1,7 +1,10 @@
 <?php
 	require_once('../controller/controller.php');
-	require_once('../controller/portfolio_contr.php');
 
+	/*
+	* Will try to update all table records all at once.
+	* Returns true or false.
+	*/
 	function sellshares($quote, $rows, $remainder, $price) {
 
 		// prepare queries
@@ -36,23 +39,30 @@
 			array_splice($queries, 0, 1);
 			array_splice($params, 0, 1);
 		} elseif ($remainder == 0) {
-			// hothing to update and delete last row
+			// hothing to update and last row should be deleted
 			array_splice($queries, 1, 1);
 			array_splice($params, 1, 1);
 		} else {
-			// save last row
+			// save last row from delete
 			$params[0][':rows'] -= 1;
 		}
-		
-		$result = dbquery1($queries, $params);
+		// call db
+		$result = dbquery($queries, $params);
 		return $result;
 	}
 
+	/*
+	* Prepares Sell page and sells shares.
+	* Returns prepared array with attributes.
+	*/
 	function shares($queries) {
+		// set deafult values
 		$hidden_a = $hidden_m = 'hidden'; 
 		$hidden_d = $message = $data = '';
-		// get portfolio
+		
+		// get user's portfolio
 		$info = getuserinfo($_SESSION['userid']);
+		
 		// if user has no portfolio or in case of db error
 		if (is_string($info)) {
 			$message = $info;
@@ -83,7 +93,9 @@
 						$rows = 0;
 						$share = strtoupper($queries['shares']);
 						foreach ($data as $row) {
+							// if share is found
 							if ($share == $row['sharesquote']) {
+								// count rows and remainder
 								$rows++;
 								$rem = $row['sharesq'] - $quantity;
 								// break if row's quantity is sufficient
@@ -92,16 +104,18 @@
 									$remainder = $rem;
 									break;
 								}
-								// if not - update Q for the next one
+								// if not - update quantity for next turn
 								$quantity = abs($rem);
 							}
 						}
+						// if no shares found
 						if ($rows == 0) {
 							$hidden_m = '';
 							$hidden_a = 'hidden';
 							$message = "You have no $share 
 										shares in your portfolio";
 						} elseif ($remainder === 'none') {
+							// or quantity is not enough 
 							$hidden_m = '';
 							$hidden_a = 'hidden';
 							$message = "You have not enough $share 
@@ -123,7 +137,6 @@
 								$message = "You have sold your $share shares successfully";
 							}
 						}
-
 					}
 				}
 			}

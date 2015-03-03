@@ -1,7 +1,7 @@
 <div class="col-md-3"></div>
 <div class="col-md-6 center">
-	<div class="result <?= $hidden_m; ?>">
-		<?= '<span class="alerts">' . htmlspecialchars($message) . '</span>' ?>
+	<div class="result alerts <?= $hidden_m; ?>">
+		<h3><?= htmlspecialchars($message); ?></h3>
 	</div>
 
 	<div class="form-group result <?= $hidden_d; ?>">

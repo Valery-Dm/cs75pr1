@@ -61,6 +61,7 @@ input, .btn{
 .alerts{
 	color: red;
 	text-align: center;
+	font-size: 1.2em;
 	display: block;
 }
 .result{
