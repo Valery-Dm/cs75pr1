@@ -2,19 +2,42 @@ body, html{
 	margin:0;
 	width:100%;
 	height:100%;
-	color:#555;
+	color:#444;
+	cursor: default;
 }
 @font-face {
     font-family: glyphicons;
     src: url(../../bootstrap/fonts/glyphicons-halflings-regular.woff);
+}
+*:focus {
+    outline: 0 !important;
+}
+h1{
+	margin-top: 20px;
+}
+h2, h3{
+	margin: 0;
+}
+input, .btn{
+	border-radius: 3px 15px !important;
 }
 .wrap{
 	min-height: 100%;
 	height: auto !important;
 	margin:0 auto -60px;
 }
+.nojava{
+	float: left;
+	padding-left: 25px;
+}
 #footer, #push{
 	height: 60px;
+}
+.nav li a{
+	border-radius: 0 17px !important;
+}
+.active a{
+	background-color: whitesmoke!important;
 }
 .center{
 	text-align:center;
@@ -28,22 +51,24 @@ body, html{
 	background-clip: content-box;
 	background-color: #ddd;
 	padding-top:30px;
-	margin: -10px 0 40px 0;
-	border-radius:10px;
+	margin: -12px 0 40px 0;
+	border-radius:10px 50px;
 }
 .sitename{
-	font-weight: 800;
+	font-weight: 600;
 	color: #f42 !important;
 }
 .alerts{
 	color: red;
 	text-align: center;
-	margin-top: 10px;
 	display: block;
 }
 .result{
 	margin-bottom: 20px;
 	padding: 20px;
 	border: 2px solid #ddd;
-	border-radius: 5px;
+	border-radius: 10px 50px;
+}
+.muted-credit{
+	padding: 15px;
 }

@@ -66,4 +66,79 @@
 		return false;
 	}
 	
+
+	function dbquery1($queries, $params = array()) {
+
+		// create time object
+		$time = new DateTime('NOW');
+
+		// open log file
+		$file = fopen('../model/errors.log', 'a');
+
+		try {
+			// connect to database
+			$DBUSER = 'lampp';
+			$DBPASS = 'serveradmin';
+			$DSN = "mysql:host=localhost;dbname=cs75finance;";
+			$pdo = new PDO($DSN, $DBUSER, $DBPASS);
+			$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			// lock db
+			$pdo->beginTransaction();
+			$result = 1;
+			$error = 0;
+			
+			// execute all queries
+			for ($index = 0, $lenght = count($queries); 
+				 $index < $lenght; $index++) {
+
+				// prepare statement
+				$stmt = $pdo->prepare($queries[$index]);
+				foreach ($params[$index] as $param => $val) {
+					$stmt->bindValue($param, $val);
+				}
+				
+				// execute and return result
+				if ($queries[$index][0] == 'S') {
+					// for SELECT queries
+					if ($stmt->execute()) {
+						$result = $stmt->fetchAll();
+					} else {
+						// log errors
+						fwrite($file, $time->format('c') 
+								   . '>dbquery:select> ' 
+								   . "can't get data\n");
+						fclose($file);
+						// error mark
+						$error = 1;
+					}
+				} else {
+					if (!$stmt->execute()) {
+						// log errors
+						fwrite($file, $time->format('c') 
+								   . '>dbquery:change> ' 
+								   . "can't write into db\n");
+						fclose($file);
+						// error mark
+						$error = 1;
+					}
+				}
+			}
+			if ($error == 1) {
+				$pdo->rollBack();
+				return false;
+			}
+			
+			// commit on success
+			$pdo->commit();
+			// return data for 'select' or 1
+			return $result;
+		} catch (PDOException $e) {
+			// log errors
+			fwrite($file, $time->format('c') 
+					   . '>dbquery:code> ' 
+					   . $e->getCode() . "\n");
+			fclose($file);
+			return false;
+		}
+	}
 ?>

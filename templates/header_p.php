@@ -9,9 +9,14 @@
 		<link rel="stylesheet" href="../templates/style.css" />
 	</head>
 	<body>
-<div class="wrap">	
-<div class="container">
-	
+<div class="wrap">
+	<div class="container">
+	<noscript>
+		<div class="alerts nojava">
+			It seems that javascript is not enabled.  
+			Less perfomance expected.
+		</div>
+	</noscript>
 	<div class="navbar navbar-default top">
 		<div class="container-fluid">
 			<div class="navbar-header">

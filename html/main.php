@@ -1,18 +1,26 @@
 <?php
 	require_once('../controller/controller.php');
 
+	// if user is not logged in switch to login page
 	if (!isset($_SESSION['userid'])) {
 		header('Location:index.php');
 	}
+	// message for wrong address	
 	$data = 'There is no such page';
-	
+	$page = '';
+	// page configuration section
 	if (isset($_GET['page'])) {
 		$page = $_GET['page'];
 		$body = strtolower($page);
-		require('../controller/' . $body . '_contr.php');	
+		if (file_exists('../controller/' . $body . '_contr.php')){
+			require('../controller/' . $body . '_contr.php');
+		} else {
+			$body = '404';
+		}
 		$queries = array();
 		if ($page == 'Quotes') {
-			$title = $message = 'Get quote';
+			// configures Quotes page
+			$title = $message = 'Get quote and buy';
 			if (isset($_POST['quotes'])) {
 				$queries = array('quotes' => $_POST['quotes']);
 			} elseif (isset($_POST['buytotal']) and $_POST['buytotal'] > 0) {
@@ -20,28 +28,42 @@
 								 'name' => $_POST['buyname'], 
 								 'total' => $_POST['buytotal'], 
 								 'price' => $_POST['buyprice']);
+			} else {
+				$queries = array();
 			}
 			$data = quotes($queries);
 		} elseif ($page == 'Sell') {
-			$title = $message = 'Here you can sell your shares';
-			$data = shares();
+			// Configures Sell page
+			$title = $message = 'Sell your shares';
+			if (isset($_POST['sharesq']) and 
+				isset($_POST['shares'])) {
+				$queries = array('shares' => $_POST['shares'], 
+								 'sharesq' => $_POST['sharesq']);
+			} else {
+				$queries = array();
+			}
+			$data = shares($queries);
 		} elseif ($page == 'Portfolio') {
-			$data = getuserinfo($_SESSION['userid']);
+			// Configures Portfolio page
+			$data = portfolio();
 			$title = $page;
 			$message = 'Welcome, ' 
 								. $_SESSION['username'] 
 								. ', your deposit is $' 
-								. $_SESSION['cash'];
+								. number_format($_SESSION['cash'], 2);
 		} else {
-			$title = $body = $message = '404';
+			// Wrong GET 'page' value
+			$title = $message = '404';
 		}
 	} else {
+		// GET 'page' attribute is not present
 		$title = $body = $message = '404';
 	}
 
 	// if no actual data - the alert needs to be shown	
 	if (!is_array($data)) {
-		$data = array('data' => $data, 
+		$data = array('message' => $data, 
+					  'data' => '',
 					  'hidden_a' => '', 
 					  'hidden_d' => 'hidden');
 	}

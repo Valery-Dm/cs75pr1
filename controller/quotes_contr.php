@@ -1,30 +1,6 @@
 <?php
 	require_once('../controller/controller.php');	
 
-	function getjson($type, $query) {
-		if ($type == 'quotes') {
-			if (preg_match('/[^a-zA-Z]/', $query) or $query == '') {
-				return 'invalid quote';
-			} else {
-				$url = "http://download.finance.yahoo.com/d/
-						quotes.json?f=snl1&s=$query";
-				$result = call_api($url);
-				$count = count($result);
-				if (!$result or $count == 1) {
-					return 'Can\'t get quotes now';
-				} elseif ($result[$count - 1] == 0.00) {
-					return 'invalid quote';
-				}
-				if ($count == 4) {
-					$name = $result[1] . $result[2];
-				} else {
-					$name = $result[1];
-				}
-				return array($name, $result[$count - 1], $result[0]);
-			}
-		}
-	}
-
 	function buyshares($share=array()) {
 		
 		// first try to minus total price from user's account
@@ -40,8 +16,8 @@
 		$query = 'INSERT INTO shares 
 				 (sharesquote, sharesname, sharesq, sharesprice, sharesuser)
 				  VALUES (:quote, :name, :total, :price, :userid)';
-		$buy = dbquery($query, array(':quote' => $share['quote'], 
-									 ':name' => $share['name'], 
+		$buy = dbquery($query, array(':quote' => trim($share['quote'], '"'), 
+									 ':name' => trim($share['name'], '"'), 
 									 ':total' => $share['total'], 
 									 ':price' => $share['price'], 
 									 ':userid' => $_SESSION['userid']));
