@@ -133,7 +133,6 @@
 							} else {
 								$hidden_m = '';
 								$hidden_a = 'hidden';
-								$_SESSION['cash'] += $price;
 								$message = "You have sold your $share shares successfully";
 							}
 						}

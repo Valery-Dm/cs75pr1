@@ -7,17 +7,22 @@
 	*/
 	function portfolio() {
 		$info = getuserinfo($_SESSION['userid']);
-		if (is_array($info)) {
-			$result = array('hidden_a' => 'hidden', 
-							'hidden_d' => '', 
-							'message' => '', 
-							'data' => $info);
-		} else {
+		
+		if (is_string($info)) {
+			// in case of error show the alert
 			$result = array('hidden_a' => '', 
 							'hidden_d' => 'hidden', 
 							'message' => $info, 
 							'data' => array());
+			
+		} else {
+			// get data for return 
+			$result = array('hidden_a' => 'hidden', 
+							'hidden_d' => '', 
+							'message' => '', 
+							'data' => $info);
 		}
+		
 		return $result;
 	}
 ?>

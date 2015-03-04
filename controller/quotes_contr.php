@@ -10,7 +10,7 @@
 
 		// check user's deposit
 		$total = $share['total'] * $share['price'];
-		$usercash = usercash($_SESSION['userid']);
+		$usercash = getusercash($_SESSION['userid']);
 		if (!$usercash) {
 			return 'can\'t buy now, try again later';
 		} elseif ($usercash - $total < 0) {
@@ -40,7 +40,6 @@
 		if (!$result) {
 			return 'can\'t buy now, try again later';
 		} else {
-			$_SESSION['cash'] -= $total;
 			return 'You\'ve bought ' 
 						. $share['total'] . ' shares of ' 
 						. $share['name'];

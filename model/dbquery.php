@@ -26,6 +26,7 @@
 			$result = 1;
 			$error = false;
 			$error_s = 1;
+			
 			// execute all queries
 			for ($index = 0, $lenght = count($queries); 
 				 $index < $lenght; $index++) {
@@ -34,6 +35,12 @@
 				$stmt = $pdo->prepare($queries[$index]);
 				foreach ($params[$index] as $param => $val) {
 					$stmt->bindValue($param, $val);
+					// default rows quantity
+					$rows = 1;
+					if ($param == ':rows') {
+						// given rows quantity
+						$rows = $val;
+					}
 				}
 				
 				// execute and return result
@@ -51,6 +58,7 @@
 						$error_s = 2;
 					}
 				} else {
+					// for other queries
 					if (!$stmt->execute()) {
 						// log errors
 						fwrite($file, $time->format('c') 
@@ -59,9 +67,15 @@
 						fclose($file);
 						// error mark
 						$error = true;
+					} elseif ($rows != $stmt->rowCount()) {
+						// If affected rows quantity is wrong
+						// Prevent parallel operations
+						$error = true;
 					}
 				}
 			}
+
+			// if we have an error
 			if ($error) {
 				$pdo->rollBack();
 				return false;

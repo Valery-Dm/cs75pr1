@@ -45,7 +45,7 @@
 	/*
 	* Gets user's money from db. Returns float.
 	*/
-	function usercash($userid) {
+	function getusercash($userid) {
 		$query = 'SELECT cash FROM users WHERE userid=:userid';
 		$result = dbquery([$query], [[':userid' => $userid]]);
 		if (!is_array($result)) {

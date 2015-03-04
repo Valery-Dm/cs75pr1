@@ -47,10 +47,13 @@
 			// Configures Portfolio page
 			$data = portfolio();
 			$title = $page;
-			$message = 'Welcome, ' 
-								. $_SESSION['username'] 
-								. ', your deposit is $' 
-								. number_format($_SESSION['cash'], 2);
+			$cash = getusercash($_SESSION['userid']);
+			if ($cash === false) {
+				$message = 'Something went wrong, try to login again';
+			} else {
+				$message = 'Welcome, ' . $_SESSION['username'] 
+							. ', your deposit is $' . $cash;
+			}
 		} else {
 			// Wrong GET 'page' value
 			$title = $message = '404';
