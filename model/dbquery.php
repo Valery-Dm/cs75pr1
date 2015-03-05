@@ -1,7 +1,7 @@
 <?php
 
 	/*
-	* Handles all database queries.
+	* Handles all database queries (except Sell query).
 	* Takes several queries and their parameters.
 	* Locks DB for all queries and roll changes back on any error.
 	* Also trucks error records to a log-file.
@@ -40,15 +40,6 @@
 				// bind parameters
 				foreach ($params[$index] as $param => $val) {
 					$stmt->bindValue($param, $val);
-					// default rows quantity
-					$rows = 1;
-					if ($param == ':rows') {
-						// given rows quantity
-						$rows = $val;
-					} elseif ($param == ':username') {
-						// for finduser query expect no user result
-						$rows = 0;
-					}
 				}
 				
 				// execute and return result
@@ -56,10 +47,6 @@
 					// for SELECT queries
 					if ($stmt->execute()) {
 						$result = $stmt->fetchAll();
-						// This will prevent wrong operations
-						if (count($result) < $rows) {
-							$error = true;
-						} 
 					} else {
 						// log errors
 						fwrite($file, $time->format('c') 

@@ -95,7 +95,6 @@
 			// populate global array with user's data
 			$_SESSION['userid'] = $login[0]['userid'];
 			$_SESSION['username'] = htmlspecialchars($login[0]['username']);
-			$_SESSION['cash'] = $login[0]['cash'];
 			return 'login';
 		}
 	}
