@@ -1,16 +1,24 @@
 <?php
 	require_once('../controller/controller.php');	
+	/* test
+	for	($i = 0; $i < 5; $i++) {
+		print buyshares(['quote' => 'V', 'name' => 'Visa Inc.', 
+						 'total' => $i, 'price' => 275]) ."\n";
+	}
+	*/
 
 	/*
 	* Function prepares DB query based on given parameters,
 	* Then puts them into dbquery function.
-	* Return string on error or success.
+	* It takes Quote, its full Name, Quantity and Price of 1 share.
+	* Return string with error or success message.
 	*/
 	function buyshares($share=array()) {
 
 		// check user's deposit
 		$total = $share['total'] * $share['price'];
-		$usercash = getusercash($_SESSION['userid']);
+		$userid = $_SESSION['userid']; // replace by number for test
+		$usercash = getusercash($userid);
 		if (!$usercash) {
 			return 'can\'t buy now, try again later';
 		} elseif ($usercash - $total < 0) {
@@ -29,12 +37,13 @@
 						:price, :userid)'	];
 
 		// prepare parameters
-		$params = [[':total' => $total, ':userid' => $_SESSION['userid']], 
-				   [':quote' => trim($share['quote'], '"'), 
-					':name' => trim($share['name'], '"'), 
-					':total' => $share['total'], 
-					':price' => $share['price'], 
-					':userid' => $_SESSION['userid']]];
+		$params = [	   [':total' => $total, ':userid' => $userid], 
+
+					   [':quote' => trim($share['quote'], '"'), 
+						':name' => trim($share['name'], '"'), 
+						':total' => $share['total'], 
+						':price' => $share['price'], 
+						':userid' => $userid]	];
 
 		// try to update db
 		$result = dbquery($queries, $params);
@@ -45,7 +54,6 @@
 						. $share['total'] . ' shares of ' 
 						. $share['name'];
 		}
-		
 	}
 
 	/*
