@@ -20,19 +20,24 @@
 			$DBPASS = 'serveradmin';
 			$DSN = "mysql:host=localhost;dbname=cs75finance;";
 			$pdo = new PDO($DSN, $DBUSER, $DBPASS);
+			// This will allow bind values of different types in a loop 
 			$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-			// lock db
+			
+			// isolate given queries
 			$pdo->beginTransaction();
+			// this will be chaged in SELECT part
 			$result = 1;
+			// marks for errors
 			$error = false;
 			$error_s = 1;
 			
-			// execute all queries
+			// execute all queries in a loop
 			for ($index = 0, $lenght = count($queries); 
 				 $index < $lenght; $index++) {
 
 				// prepare statement
 				$stmt = $pdo->prepare($queries[$index]);
+				// bind parameters
 				foreach ($params[$index] as $param => $val) {
 					$stmt->bindValue($param, $val);
 					// default rows quantity
@@ -40,6 +45,9 @@
 					if ($param == ':rows') {
 						// given rows quantity
 						$rows = $val;
+					} elseif ($param == ':username') {
+						// for finduser query expect no user result
+						$rows = 0;
 					}
 				}
 				
@@ -48,13 +56,17 @@
 					// for SELECT queries
 					if ($stmt->execute()) {
 						$result = $stmt->fetchAll();
+						// This will prevent wrong operations
+						if (count($result) < $rows) {
+							$error = true;
+						} 
 					} else {
 						// log errors
 						fwrite($file, $time->format('c') 
 								   . '>dbquery:select> ' 
 								   . "can't get data\n");
 						fclose($file);
-						// error mark for read db
+						// error mark for SELECT
 						$error_s = 2;
 					}
 				} else {
@@ -67,10 +79,6 @@
 						fclose($file);
 						// error mark
 						$error = true;
-					} elseif ($rows != $stmt->rowCount()) {
-						// If affected rows quantity is wrong
-						// Prevent parallel operations
-						$error = true;
 					}
 				}
 			}
@@ -82,7 +90,7 @@
 			} elseif ($error_s == 2) {
 				// no need to roll back SELECT queries
 				$pdo->commit();
-				return $error;
+				return 2;
 			}
 			
 			// commit on success

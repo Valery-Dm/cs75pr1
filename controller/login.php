@@ -45,7 +45,8 @@
 	* Returns string.
 	*/
 	function finduser($username){
-		$query = 'SELECT username FROM users WHERE username=:username';
+		$query = 'SELECT username FROM users 
+				  WHERE username=:username';
 		$finduser = dbquery([$query], [[':username' => $username]]);
 		if ($finduser == 2) {
 			// if we have a 'connect to database' error on usercheck

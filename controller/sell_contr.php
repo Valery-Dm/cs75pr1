@@ -1,11 +1,55 @@
 <?php
 	require_once('../controller/controller.php');
 
+	sellshares('T', 6, 35, 7);
+
+	function sellshares1($quote, $rows, $remainder, $price) {
+		$DBUSER = 'lampp';
+		$DBPASS = 'serveradmin';
+		$DSN = "mysql:host=localhost;dbname=cs75finance;";
+		$pdo = new PDO($DSN, $DBUSER, $DBPASS);
+		$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+		
+		
+		// lock db
+		$pdo->beginTransaction();
+		
+		$stmt = $pdo->prepare('UPDATE shares 
+						SET sharesq=sharesq-10
+						WHERE sharesq-10 >= 0
+						AND sharesquote=:quote
+						AND sharesuser=:userid
+						ORDER BY sharesquote ASC
+						LIMIT 1');
+		//$_SESSION['userid']
+		$stmt->execute([$quote, 42, $rows]);
+		$row = $stmt->fetchAll();
+		
+		//print_r($row);
+		if (count($row) != $rows) {
+			print "back \n";
+			$pdo->rollBack();
+			
+		} else {
+			print "go \n";
+			$pdo->commit();
+		}
+		
+	}
+
 	/*
 	* Will try to update all table records all at once.
 	* Returns true or false.
 	*/
-	function sellshares($quote, $rows, $remainder, $price) {
+	function sellshares($quote, $rows, $lastq, $price) {
+
+		// select rows to be updated
+		$query_sel =   'SELECT sharesid FROM shares 
+						WHERE sharesquote=:quote 
+						AND sharesuser=:userid
+						ORDER BY sharesquote ASC
+						LIMIT :rows 
+						LOCK IN SHARE MODE';
 
 		// prepare queries
 		$query_del =   'DELETE FROM shares 
@@ -13,40 +57,48 @@
 						AND sharesuser=:userid
 						ORDER BY sharesquote ASC
 						LIMIT :rows';
-		$query_upd =   'UPDATE shares 
-						SET sharesq=:remainder
+		$query_upd =   "UPDATE shares 
+						CASE 
+						WHEN sharesq-$lastq >= 0
+						THEN SET sharesq=sharesq-$lastq
+						ELSE
 						WHERE sharesquote=:quote
 						AND sharesuser=:userid
 						ORDER BY sharesquote ASC
-						LIMIT 1';
+						LIMIT 1";
 		$query_add =   'UPDATE users 
 						SET cash=cash + :cash
 						WHERE userid=:userid';
-		$queries = array($query_del, $query_upd, $query_add);
-
+		$queries = array($query_sel, $query_del, $query_upd, $query_add);
+		$id = $_SESSION['userid'];
 		// collect parameters
 		$params = [	[':quote' => $quote, 
-					 ':userid' => $_SESSION['userid'], 
-					 ':rows' => $rows], 
-					[':remainder' => $remainder, 
-					 ':quote' => $quote, 
-					 ':userid' => $_SESSION['userid']], 
+					 ':userid' => $id, 
+					 ':rows' => $rows],
+				    [':quote' => $quote, 
+					 ':userid' => $id, 
+					 ':rows' => 'to be determined'], 
+					[':quote' => $quote, 
+					 ':userid' => $id], 
 					[':cash' => $price, 
-					 ':userid' => $_SESSION['userid']] ];
+					 ':userid' => $id] ];
 		
-		if ($remainder > 0 and $rows == 1) {
+		if ($lastq > 0 and $rows == 1) {
 			// nothing to delete
-			array_splice($queries, 0, 1);
-			array_splice($params, 0, 1);
-		} elseif ($remainder == 0) {
-			// hothing to update and last row should be deleted
 			array_splice($queries, 1, 1);
 			array_splice($params, 1, 1);
+		} elseif ($lastq == 0) {
+			// hothing to update and last row should be deleted
+			array_splice($queries, 2, 1);
+			array_splice($params, 2, 1);
+			$params[1][':rows'] = $rows;
 		} else {
-			// save last row from delete
-			$params[0][':rows'] -= 1;
+			// save last row for update
+			$params[1][':rows'] = $rows - 1;
 		}
-		// call db
+		//var_dump($params);
+		
+		// try to update db
 		$result = dbquery($queries, $params);
 		return $result;
 	}
@@ -89,7 +141,7 @@
 						$price = floatval($price[1]);
 						$quantity = $queries['sharesq'];
 						// check if user has enough shares to sell
-						$remainder = 'none';
+						$rem = -1;
 						$rows = 0;
 						$share = strtoupper($queries['shares']);
 						foreach ($data as $row) {
@@ -100,8 +152,6 @@
 								$rem = $row['sharesq'] - $quantity;
 								// break if row's quantity is sufficient
 								if ($rem >= 0) {
-									// store last remainder
-									$remainder = $rem;
 									break;
 								}
 								// if not - update quantity for next turn
@@ -114,7 +164,7 @@
 							$hidden_a = 'hidden';
 							$message = "You have no $share 
 										shares in your portfolio";
-						} elseif ($remainder === 'none') {
+						} elseif ($rem < -10) {
 							// or quantity is not enough 
 							$hidden_m = '';
 							$hidden_a = 'hidden';
@@ -124,7 +174,7 @@
 							$price = $queries['sharesq'] * $price;
 							// try to sell shares
 							$sell = sellshares($share, $rows, 
-											   $remainder, $price);
+											   $quantity, $price);
 							if (!$sell) {
 								$hidden_m = '';
 								$hidden_a = 'hidden';
