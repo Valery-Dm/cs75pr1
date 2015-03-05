@@ -1,110 +1,140 @@
 <?php
 	require_once('../controller/controller.php');
 
-	sellshares('T', 6, 35, 7);
+	/*
+	* Takes Quote name as string, Quantity as int and Price as float.
+	* Opens db connection for isolated transaction. 
+	* Returns string with success or error message.
+	*/
+	function sellshares($quote, $sharesq, $price) {
 
-	function sellshares1($quote, $rows, $remainder, $price) {
 		$DBUSER = 'lampp';
 		$DBPASS = 'serveradmin';
 		$DSN = "mysql:host=localhost;dbname=cs75finance;";
 		$pdo = new PDO($DSN, $DBUSER, $DBPASS);
-		$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 		
+		$cash = $sharesq * $price;
+		$userid = $_SESSION['userid'];
+		$index = 0;
 		
-		// lock db
-		$pdo->beginTransaction();
-		
-		$stmt = $pdo->prepare('UPDATE shares 
-						SET sharesq=sharesq-10
-						WHERE sharesq-10 >= 0
-						AND sharesquote=:quote
-						AND sharesuser=:userid
-						ORDER BY sharesquote ASC
-						LIMIT 1');
-		//$_SESSION['userid']
-		$stmt->execute([$quote, 42, $rows]);
-		$row = $stmt->fetchAll();
-		
-		//print_r($row);
-		if (count($row) != $rows) {
-			print "back \n";
-			$pdo->rollBack();
-			
-		} else {
-			print "go \n";
-			$pdo->commit();
-		}
-		
-	}
-
-	/*
-	* Will try to update all table records all at once.
-	* Returns true or false.
-	*/
-	function sellshares($quote, $rows, $lastq, $price) {
-
-		// select rows to be updated
-		$query_sel =   'SELECT sharesid FROM shares 
+		$queries = [   "SELECT sharesq, sharesname
+						FROM shares 
 						WHERE sharesquote=:quote 
 						AND sharesuser=:userid
 						ORDER BY sharesquote ASC
-						LIMIT :rows 
-						LOCK IN SHARE MODE';
-
-		// prepare queries
-		$query_del =   'DELETE FROM shares 
+						LIMIT 1
+						LOCK IN SHARE MODE", 
+					
+					   "DELETE FROM shares 
 						WHERE sharesquote=:quote 
 						AND sharesuser=:userid
 						ORDER BY sharesquote ASC
-						LIMIT :rows';
-		$query_upd =   "UPDATE shares 
-						CASE 
-						WHEN sharesq-$lastq >= 0
-						THEN SET sharesq=sharesq-$lastq
-						ELSE
+						LIMIT 1", 
+					
+					   "UPDATE shares 
+						SET sharesq=:sharesq
 						WHERE sharesquote=:quote
 						AND sharesuser=:userid
 						ORDER BY sharesquote ASC
-						LIMIT 1";
-		$query_add =   'UPDATE users 
+						LIMIT 1",
+				   
+				   	   "UPDATE users 
 						SET cash=cash + :cash
-						WHERE userid=:userid';
-		$queries = array($query_sel, $query_del, $query_upd, $query_add);
-		$id = $_SESSION['userid'];
-		// collect parameters
-		$params = [	[':quote' => $quote, 
-					 ':userid' => $id, 
-					 ':rows' => $rows],
-				    [':quote' => $quote, 
-					 ':userid' => $id, 
-					 ':rows' => 'to be determined'], 
-					[':quote' => $quote, 
-					 ':userid' => $id], 
-					[':cash' => $price, 
-					 ':userid' => $id] ];
+						WHERE userid=:userid"	];
 		
-		if ($lastq > 0 and $rows == 1) {
-			// nothing to delete
-			array_splice($queries, 1, 1);
-			array_splice($params, 1, 1);
-		} elseif ($lastq == 0) {
-			// hothing to update and last row should be deleted
-			array_splice($queries, 2, 1);
-			array_splice($params, 2, 1);
-			$params[1][':rows'] = $rows;
-		} else {
-			// save last row for update
-			$params[1][':rows'] = $rows - 1;
+		// isolate transaction
+		$pdo->beginTransaction();
+		$error = false;
+		$rem = 1;
+		$message = "Can't finish operation now";
+		// execution will stop in no-update case
+		while (true) {
+
+			$stmt = $pdo->prepare($queries[$index]);
+			// bind parameters
+			$stmt->bindValue(':userid', $userid, PDO::PARAM_INT);
+			// common value or that for final stage
+			($index != 3) ?
+				$stmt->bindValue(':quote', $quote, PDO::PARAM_STR)
+				: $stmt->bindValue(':cash', $cash, PDO::PARAM_STR);
+			
+			// just for update case
+			($index == 2) ?
+				$stmt->bindValue(':sharesq', $sharesq, PDO::PARAM_INT) : '';
+			
+			// in case of db error
+			if ($stmt->execute() === false){
+				$error = true;
+				break;
+			}
+			
+			// fetch result for select queries
+			if ($index == 0) {
+				$fetch = $stmt->fetch();
+				if ($fetch > 0) {
+					$rem = $fetch['sharesq'] - abs($sharesq);
+					$sharesq = abs($rem);
+					// delete this row or update its quantity
+					if ($rem <= 0) {
+						$index = 1;
+						continue;
+					} else {
+						$index = 2;
+						continue;
+					}
+					
+				} else {
+					$message = "You have no $quote 
+								shares in your portfolio
+								or quantity is not enough";
+					$error = true;
+					break;
+				}
+			}
+			// delete query
+			if ($index == 1) {
+				// if last row go to final stage
+				if ($rem == 0) {
+					$index = 3;
+					continue;
+				} else {
+					// find next row
+					$index = 0;
+					continue;
+				}
+				
+			}
+			// update query
+			if ($index == 2) {
+				if ($stmt->rowCount() > 0) {
+					// finalize queue
+					$index = 3;
+					continue;
+				} else {
+					$error = true;
+					break;
+				}
+			}
+			// update user's money
+			if ($index == 3) {
+				if ($stmt->rowCount() > 0) {
+					$message = "You have sold $quote 
+								shares successfully";
+					break;
+				} else {
+					$error = true;
+					break;
+				}
+			}
 		}
-		//var_dump($params);
+		// close transaction
+		($error) ? $pdo->rollBack() : $pdo->commit();
 		
-		// try to update db
-		$result = dbquery($queries, $params);
-		return $result;
+		return $message;
 	}
 
 	/*
-	* Prepares Sell page and sells shares.
+	* Prepares Sell page and calls sellshares function.
 	* Returns prepared array with attributes.
 	*/
 	function shares($queries) {
@@ -119,18 +149,22 @@
 		if (is_string($info)) {
 			$message = $info;
 			$hidden_m = '';
-			$hidden_d = 'hidden';
+			$hidden_a = $hidden_d = 'hidden';
 		} else {
 			$data = $info;
 			// if we have shares to sell
 			if (count($queries) === 2) {
+				$share = strtoupper($queries['shares']);
 				// return immediately if we have incomplete query
-				if ($queries['shares'] == '' or $queries['sharesq'] == 0) {
-					$message = 'You didn\'t specify shares name or quantity';
-					$hidden_a = '';
+				if ($share == '' or 
+					!is_numeric($queries['sharesq']) or 
+					$queries['sharesq'] <= 0) {
+						$message = 'You didn\'t specify shares name or quantity';
+						$hidden_a = '';
 				} else {
+					$sharesq = intval($queries['sharesq']);
 					// get current price
-					$price = getjson('quotes', $queries['shares']);
+					$price = getjson('quotes', $share);
 					// in case of json error
 					if (is_string($price)) {
 						$message = $price;
@@ -139,53 +173,10 @@
 					} else {
 						// select price from the array
 						$price = floatval($price[1]);
-						$quantity = $queries['sharesq'];
-						// check if user has enough shares to sell
-						$rem = -1;
-						$rows = 0;
-						$share = strtoupper($queries['shares']);
-						foreach ($data as $row) {
-							// if share is found
-							if ($share == $row['sharesquote']) {
-								// count rows and remainder
-								$rows++;
-								$rem = $row['sharesq'] - $quantity;
-								// break if row's quantity is sufficient
-								if ($rem >= 0) {
-									break;
-								}
-								// if not - update quantity for next turn
-								$quantity = abs($rem);
-							}
-						}
-						// if no shares found
-						if ($rows == 0) {
-							$hidden_m = '';
-							$hidden_a = 'hidden';
-							$message = "You have no $share 
-										shares in your portfolio";
-						} elseif ($rem < -10) {
-							// or quantity is not enough 
-							$hidden_m = '';
-							$hidden_a = 'hidden';
-							$message = "You have not enough $share 
-										shares in your portfolio";
-						} else {
-							$price = $queries['sharesq'] * $price;
-							// try to sell shares
-							$sell = sellshares($share, $rows, 
-											   $quantity, $price);
-							if (!$sell) {
-								$hidden_m = '';
-								$hidden_a = 'hidden';
-								$message = 'Can\'t finish operation now,
-											try again later';
-							} else {
-								$hidden_m = '';
-								$hidden_a = 'hidden';
-								$message = "You have sold your $share shares successfully";
-							}
-						}
+						// try to sell shares
+						$message = sellshares($share, $sharesq, $price);
+						$hidden_m = '';
+						$hidden_a = 'hidden';
 					}
 				}
 			}

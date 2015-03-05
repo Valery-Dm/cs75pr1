@@ -18,14 +18,15 @@
 		}
 
 		// prepare queries
-		$query_charge ='UPDATE users 
+		$queries = [   'UPDATE users 
 						SET cash=cash - :total 
-						WHERE userid=:userid';
-		$query_add =   'INSERT INTO shares 
+						WHERE userid=:userid',
+
+					   'INSERT INTO shares 
 				   		(sharesquote, sharesname, sharesq, 
 						sharesprice, sharesuser)
 				  		VALUES (:quote, :name, :total, 
-						:price, :userid)';
+						:price, :userid)'	];
 
 		// prepare parameters
 		$params = [[':total' => $total, ':userid' => $_SESSION['userid']], 
@@ -36,7 +37,7 @@
 					':userid' => $_SESSION['userid']]];
 
 		// try to update db
-		$result = dbquery(array($query_charge, $query_add), $params);
+		$result = dbquery($queries, $params);
 		if (!$result) {
 			return 'can\'t buy now, try again later';
 		} else {
