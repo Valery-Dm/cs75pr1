@@ -2,6 +2,7 @@
 	
 	require_once('../controller/login.php');
 	
+
 	// select page to show
 	if (isset($_SESSION['userid'])) {
 		// move registered user to his portfolio

@@ -79,5 +79,5 @@
 											 'Quotes', 
 											 'Sell')));
 	render($body, $data);
-	render('footer');
+	render('footer_p');
 ?>

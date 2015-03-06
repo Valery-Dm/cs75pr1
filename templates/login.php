@@ -1,13 +1,13 @@
 <div class="col-md-3"></div>
 <div class="col-md-6 center">
 	<div class="form-group">
-		<form method="post">
+		<form id="loginform" method="post">
 
 <label for="username">Username</label>
 <input type="text" name="username" id="username" class="form-control" 
 	   value="<?= (isset($_POST['username'])) ? 
 		htmlspecialchars($_POST['username']) : '' ?>" autofocus />
-<?= "<span class='help-block alerts $hidden'>$error</span>" ?>
+<?= "<span id='namealert' class='help-block alerts $hidden'>$error</span>" ?>
 <span class="help-block">Please enter your login name</span>
 <br />
 
