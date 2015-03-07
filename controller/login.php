@@ -1,6 +1,31 @@
 <?php
 	require_once('../controller/controller.php');
-
+	class Guest {
+		public $title;
+		public $message;
+		public $body;
+		public $alerts;
+		
+		function __construct($page) {
+			$this->body = $page;
+			switch($page) {
+				case 'login':	
+					$this->title = 'Login form';
+					$this->message = 'Please login';
+					$this->alerts = ['name' => '',
+									 'hidden' => 'hidden'];
+					break;
+				case 'register':
+					$this->title = 
+					$this->message = 'Registration form';
+					$this->alerts = ['name' => '',
+									 'pass' => '',
+									 'conf' => '',
+									 'hidden' => 'hidden'];	
+					break;
+			}
+		}
+	}
 	/*
 	* Class should be constructed with user name
 	* and password. Public variables will be populated 
