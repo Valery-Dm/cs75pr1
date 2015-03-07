@@ -34,9 +34,11 @@ showresult = function (alerts) {
 	} else {
 		// show alerts if any
 		for (alert in alerts) {
-			if (alerts[alert]) {
-				$('#' + alert).removeClass('hidden')
-							  .html(alerts[alert]);
+			if (alerts.hasOwnProperty(alert)) {
+				if (alerts[alert]) {
+					$('#' + alert).removeClass('hidden')
+								  .html(alerts[alert]);
+				}
 			}
 		}
 	}
@@ -73,8 +75,8 @@ main = function () {
 		var alert,
 			alerts = {
 				url: false,
-				namealert: false, 
-				passalert: false, 
+				namealert: false,
+				passalert: false,
 				confalert: false
 			},
 			data = $(this).serialize(),
@@ -101,7 +103,7 @@ main = function () {
 				alerts.namealert = 'min 3, max 10 english letters or digits';
 			} else if (!validate(form[1].name, form[1].value)) {
 				// store alert
-				alerts.passalert ='requirements were not met';
+				alerts.passalert = 'requirements were not met';
 			} else if (form[1].value !== form[2].value) {
 				// store alert
 				alerts.confalert = 'passwords do not match';

@@ -7,6 +7,14 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="../../bootstrap/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="../templates/style.css" />
+		<noscript>
+			<style>
+				#navbar {
+					display: block !important;
+					visibility: visible !important;
+				}
+			</style>
+		</noscript>
 	</head>
 	<body>
 <div class="wrap">
