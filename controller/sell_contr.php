@@ -137,7 +137,7 @@
 	* Prepares Sell page and calls sellshares function.
 	* Returns prepared array with attributes.
 	*/
-	function shares($queries) {
+	function shares($queries=array()) {
 		// set deafult values
 		$hidden_a = $hidden_m = 'hidden'; 
 		$hidden_d = $message = $data = '';

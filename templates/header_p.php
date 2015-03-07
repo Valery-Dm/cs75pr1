@@ -62,9 +62,6 @@
 							}
 						}
 					?>
-					<li>
-						<a href="../controller/logout.php">Logout</a>
-					</li>
 				</ul>
 			</div>
 		</div>

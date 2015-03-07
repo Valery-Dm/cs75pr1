@@ -16,7 +16,7 @@
 	function buyshares($share=array()) {
 
 		// check user's deposit
-		$total = $share['total'] * $share['price'];
+		$total = $share['buytotal'] * $share['buyprice'];
 		$userid = $_SESSION['userid']; // replace by number for test
 		$usercash = getusercash($userid);
 		if (!$usercash) {
@@ -39,10 +39,10 @@
 		// prepare parameters
 		$params = [	   [':total' => $total, ':userid' => $userid], 
 
-					   [':quote' => trim($share['quote'], '"'), 
-						':name' => trim($share['name'], '"'), 
-						':total' => $share['total'], 
-						':price' => $share['price'], 
+					   [':quote' => trim($share['buyquote'], '"'), 
+						':name' => trim($share['buyname'], '"'), 
+						':total' => $share['buytotal'], 
+						':price' => $share['buyprice'], 
 						':userid' => $userid]	];
 
 		// try to update db
@@ -51,8 +51,8 @@
 			return 'can\'t buy now, try again later';
 		} else {
 			return 'You\'ve bought ' 
-						. $share['total'] . ' shares of ' 
-						. $share['name'];
+						. $share['buytotal'] . ' shares of ' 
+						. $share['buyname'];
 		}
 	}
 
@@ -60,7 +60,7 @@
 	* Function prepares Quotes page and call for buyshares function.
 	* Returns array with atributes to main.php
 	*/
-	function quotes($queries) {
+	function quotes($queries=array()) {
 		// select what page should be constructed
 		// set default parameters
 		$hidden_d = $hidden_a = $hidden_m = $message = $data = 'hidden'; 

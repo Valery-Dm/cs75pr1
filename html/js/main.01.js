@@ -6,61 +6,65 @@
 
 
 // declare function names
-var main, validate;
+var main, jsonpcall, showresult;
 
-validate = function (key, value) {
+showresult = function (data) {
 	"use strict";
-	
-	switch (key) {
-		case 'username':
-			// numbers and english letters only
-			// min 3 and max 10 symbols long
-			var namereg = /^[^\W_]{3,10}$/;
-			return (namereg.test(value)) ? true : false;
-		case 'password':
-			// minimum 4 symbols, at least one number
-			// and at least one uppercase character
-			var passreg = /(?=.*\d)(?=.*[A-Z])[\S]{4,}$/;
-			return (passreg.test(value)) ? true : false;
+	var alert;
+
+	if (data.body) {
+		console.log(data.body);
+	} else if (data.url) {
+		// this part for logout
+		window.location = data.url;
+	} else {
+		// show data if any
+		for (alert in data) {
+			if (data.hasOwnProperty(alert)) {
+				if (data[alert]) {
+					$('#' + alert).removeClass('hidden')
+								  .html(data[alert]);
+				}
+			}
+		}
 	}
+};
+
+jsonpcall = function (callback, data) {
+	$.ajax({
+		url: 'index_json.php',
+		jsonp: callback,
+		dataType: 'jsonp',
+		cache: false,
+		crossDomain: true,
+		data: {
+			q: data,
+			format: 'json'
+		},
+		success: function (response) {
+			showresult(response);
+		},
+		error: function (error) {
+			console.log(error);
+		}
+	});
 };
 
 main = function () {
 	"use strict";
-	
+
+	$('.navbar a').on('click', function (event) {
+		//event.preventDefault();
+		console.log($(this).serialize());
+		jsonpcall('link', $(this).attr('href'));
+		
+	});
+
 	// catch form submition
 	$('form').on('submit', function (event) {
 		// prevent sending POST query
-		event.preventDefault();
+		//event.preventDefault();
 		
-		// validate input
-		var form = $(this).serializeArray();
-		console.log(form[1].value);
-		if ($(this).attr('id') === "loginform") {
-			if (!validate(form[0].name, form[0].value) ||
-				!validate(form[1].name, form[1].value)) {
-				$('#namealert').removeClass('hidden')
-							   .html('wrong username or password');
-			} else {
-				$('#namealert').addClass('hidden');
-			}
-		} else if ($(this).attr('id') === "registerform") {
-			if (!validate(form[0].name, form[0].value)) {
-				$('#namealert').removeClass('hidden')
-							   .html('requirements were not met');
-			} else if (!validate(form[1].name, form[1].value)) {
-				$('#namealert').addClass('hidden');
-				$('#passalert').removeClass('hidden')
-							   .html('requirements were not met');
-			} else if (form[1].value !== form[2].value) {
-				$('#passalert').addClass('hidden');
-				$('#confalert').removeClass('hidden')
-							   .html('passwords do not match');
-			} else {
-				$('#confalert').addClass('hidden');
-				console.log('valid');
-			}
-		}
 	});
 };
 

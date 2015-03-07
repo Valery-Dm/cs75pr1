@@ -1,3 +1,3 @@
 <div class="alerts result">
-	<h3><?= htmlspecialchars($message) ?></h3>
+	<h3><?= htmlspecialchars($alert) ?></h3>
 </div>
