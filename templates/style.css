@@ -4,10 +4,7 @@ body, html{
 	height:100%;
 	color:#444;
 	cursor: default;
-}
-@font-face {
-    font-family: glyphicons;
-    src: url(../../bootstrap/fonts/glyphicons-halflings-regular.woff);
+	font-size: 0.9em;
 }
 *:focus {
     outline: 0 !important;
@@ -28,7 +25,7 @@ input, .btn{
 }
 .nojava{
 	float: left;
-	padding-left: 25px;
+	padding-left: 3%;
 }
 #footer, #push{
 	height: 60px;
@@ -61,7 +58,6 @@ input, .btn{
 .alerts{
 	color: red;
 	text-align: center;
-	font-size: 1.2em;
 	display: block;
 }
 .result{

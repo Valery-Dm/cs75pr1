@@ -110,7 +110,12 @@
 		public $namealert = '';
 		
 		function __construct($name, $pass) {
-			$this->namealert = $this->loguserin($name, $pass);
+			$len = strlen($name);
+			if ($len < 3 or $len > 10 or strlen($pass) < 4) {
+				$this->namealert = 'Wrong user name or password';
+			} else {
+				$this->namealert = $this->loguserin($name, $pass);
+			}
 		}
 		/*
 		* Checks user's name and password. Returns string.

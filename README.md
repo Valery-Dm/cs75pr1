@@ -7,3 +7,4 @@ PHP, MySQL via PDO, Javascript.
 As I have already taken same project in CS50 class 
 (But I'm going to recreate it from scratch)
 I will also add JSON and Google’s Visualization API.
+Password (for almost all users) is aA123.

@@ -13,7 +13,7 @@
 	<div class="container">
 	<noscript>
 		<div class="alerts nojava">
-			It seems that javascript is not enabled.  
+			Javascript is not enabled.  
 			Less perfomance expected.
 		</div>
 	</noscript>
