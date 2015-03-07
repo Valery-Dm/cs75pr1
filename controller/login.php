@@ -100,10 +100,10 @@
 	}
 
 	/*
-	* Class should be constracted with user name
-	* and password. It's variables will be populated 
+	* Class should be constructed with user name
+	* and password. Public variables will be populated 
 	* either with URL to porfolio (if logon was successfull) 
-	* or alert message to show in the Login form.
+	* or alert message to be shown on the Login page.
 	*/
 	class Login {
 		public $url = '';
@@ -122,7 +122,7 @@
 			$login = dbquery([$query], [[':username' => $name]]);
 			if ($login == 2 or $login === false) {
 				// in case of db error
-				return 'Can\'t login now, try again later';
+				return "can't login now, try again later";
 			} elseif (count($login) == 0 or
 					  !password_verify($pass, $login[0]['userpass'])) {
 				// if user doesn't exist or if wrong password provided
@@ -139,11 +139,11 @@
 
 	/*
 	* Extends Login class.
-	* Class should be constracted with user name,
+	* Class should be constructed with user name,
 	* password and confirmation password.
-	* It's variables will be populated either with
+	* Public variables will be populated either with
 	* URL to porfolio (if logon was successfull) 
-	* or alert messages to show in the Register form.
+	* or alert messages to be shown on the Register page.
 	*/
 	class Register extends Login {
 		public $passalert = '';
@@ -208,11 +208,12 @@
 			$query = 'INSERT INTO users (username, userpass) 
 					  VALUES (:username, :password)';
 			$password_hash = password_hash($password, PASSWORD_DEFAULT);
+			// call DB
 			$register = dbquery([$query], [[':username' => $username, 
 										    ':password' => $password_hash]]);
 			if (!$register) {
 				// if we have a 'connect to database' error on register
-				return 'can\'t register now, try again later';
+				return "can't register now, try again later";
 			} else {
 				// try to login
 				return $this->loguserin($username, $password);

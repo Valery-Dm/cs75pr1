@@ -34,7 +34,6 @@ showresult = function (alerts) {
 	} else {
 		// show alerts if any
 		for (alert in alerts) {
-			console.log(alert);
 			if (alerts[alert]) {
 				$('#' + alert).removeClass('hidden')
 							  .html(alerts[alert]);
@@ -44,7 +43,6 @@ showresult = function (alerts) {
 };
 
 jsonpcall = function (form, data) {
-	console.log(data);
 	$.ajax({
 		url: 'index_json.php',
 		jsonp: form,
@@ -84,14 +82,14 @@ main = function () {
 
 		// validate input
 		if ($(this).attr('id') === "loginform") {
-			// first clear alerts if any 
+			// first clear alert area 
 			$('#namealert').addClass('hidden');
 			if (!validate(form[0].name, form[0].value) ||
 				!validate(form[1].name, form[1].value)) {
 				// store alert
 				alerts.namealert = 'wrong username or password';
 			} else {
-				jsonpcall('login', data);
+				return jsonpcall('login', data);
 			}
 		} else if ($(this).attr('id') === "registerform") {
 			// first clear alerts if any 
@@ -108,9 +106,10 @@ main = function () {
 				// store alert
 				alerts.confalert = 'passwords do not match';
 			} else {
-				jsonpcall('register', data);
+				return jsonpcall('register', data);
 			}
 		}
+		return showresult(alerts);
 	});
 };
 

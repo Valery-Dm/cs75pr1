@@ -22,4 +22,3 @@
 				<p>___________________</p>
 				<p class="lead"><?= htmlspecialchars($message); ?></p>
 			</div>
-				
