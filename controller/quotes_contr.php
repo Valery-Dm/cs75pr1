@@ -20,9 +20,11 @@
 		$userid = $_SESSION['userid']; // replace by number for test
 		$usercash = getusercash($userid);
 		if (!$usercash) {
-			return 'can\'t buy now, try again later';
+			return "Can't buy now, try again later";
 		} elseif ($usercash - $total < 0) {
 			return 'You have not enough money to buy';
+		} elseif ($total == 0) {
+			return "You didn't set shares quantity";
 		}
 
 		// prepare queries
@@ -58,7 +60,7 @@
 
 	/*
 	* Function prepares Quotes page and call for buyshares function.
-	* Returns array with atributes to main.php
+	* Returns array with atributes
 	*/
 	function quotes($queries=array()) {
 		// select what page should be constructed
@@ -75,9 +77,17 @@
 				$hidden_d = '';
 			}
 		} elseif (count($queries) == 4) {
-			// Buy shares
-			$message = buyshares($queries);
-			$hidden_m = '';
+			// get latest price before buy
+			$data = getjson('quotes', $queries['buyquote']);
+			if (is_string($data)) {
+				$hidden_a = '';
+				$message = $data;
+			} else {
+				$queries['buyprice'] = $data[1];
+				// Buy shares
+				$message = buyshares($queries);
+				$hidden_m = '';
+			}
 		}
 		return array('data' => $data, 
 					 'message' => $message,

@@ -1,7 +1,7 @@
 <div class="col-md-3"></div>
 <div class="col-md-6 center">
 
-	<div class="result alerts <?= $hidden_m; ?>" >
+	<div id="quote-message" class="result alerts <?= $hidden_m; ?>" >
 		<h3><?= htmlspecialchars($message); ?></h3>
 	</div>
 

@@ -1,8 +1,20 @@
 <?php
 	require_once('../controller/main_contr.php');
 	require_once('../controller/quotes_contr.php');
+	require_once('../controller/sell_contr.php');
 
 	header('content-type: application/json; charset=utf-8');
+
+	function getresponse($queries, $form, $function) {
+		$query = [];
+		foreach ($queries as $q) {
+			$query += [$q['name'] => $q['value']];
+		}
+		$response = array('form' => $form, 
+						  'response' => $function($query));
+		return $_GET[$form] . 
+				'(' . json_encode($response) . ')';
+	}
 
 	if (isset($_GET['menu'])) {
 		// parse query
@@ -18,26 +30,10 @@
 						  'body' => $body);
 		echo $_GET['menu'] . '(' . json_encode($response) . ')';
 	} elseif (isset($_GET['form-quote'])) {
-		$queries = [$_GET['q'][0]['name'] => $_GET['q'][0]['value']];
-		$response = array('form' => 'form-quote', 
-						  'response' => quotes($queries));
-		echo $_GET['form-quote'] . '(' . json_encode($response) . ')';
+		echo getresponse($_GET['q'], 'form-quote', 'quotes');
 	} elseif (isset($_GET['form-buy'])) {
-		$queries = [];
-		foreach ($_GET['q'] as $q) {
-			$queries += [$q['name'] => $q['value']];
-		}
-		$response = array('form' => 'form-buy', 
-						  'response' => quotes($queries));
-		echo $_GET['form-buy'] . '(' . json_encode($response) . ')';
+		echo getresponse($_GET['q'], 'form-buy', 'quotes');
 	} elseif (isset($_GET['form-sell'])) {
-		//$response = $_GET['q'];
-		$queries = [];
-		foreach ($_GET['q'] as $q) {
-			$queries += [$q['name'] => $q['value']];
-		}
-		
-		$response = shares($queries);
-		echo $_GET['form-sell'] . '(' . json_encode($response) . ')';
+		echo getresponse($_GET['q'], 'form-sell', 'shares');
 	}
 ?>
