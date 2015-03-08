@@ -3,18 +3,34 @@
 	require_once('../model/call_api.php');
 
 	/*
-	* Calls for page template in HTML folder, exracts attributes
+	* Call for page template in HTML folder, 
+	* exract attributes and require the page
 	*/
 	function render($template, $data=array()) {
 		$path = __DIR__ . '/../templates/' . $template . '.php';
 		if (file_exists($path)) {
 			extract($data);
-			require($path);
+			return require($path);
 		}
 	}
 
 	/*
-	* Calls API for json data
+	* Call for page template in HTML folder, 
+	* exract its attributes
+	* and render it as a string for JSON
+	*/
+	function read($template, $data=array()) {
+		$path = __DIR__ . '/../templates/' . $template . '.php';
+		if (file_exists($path)) {
+			extract($data);
+			ob_start();
+			include($path);
+			return ob_get_clean();
+		}
+	}
+
+	/*
+	* Call API for json data
 	*/
 	function getjson($type, $query) {
 		if ($type == 'quotes') {
@@ -43,7 +59,7 @@
 	}
 
 	/*
-	* Gets user's money from db. Returns float.
+	* Get user's money from db. Return float.
 	*/
 	function getusercash($userid) {
 		$query = 'SELECT cash FROM users WHERE userid=:userid';
@@ -55,8 +71,8 @@
 	}
 
 	/*
-	* Prepares db query to get user's holds.
-	* Returns array with attributes or string with an alert.
+	* Prepare db query to get user's holds.
+	* Return array with attributes or string with an alert.
 	* Can be customized and sort data with an order.
 	*/
 	function getuserinfo($userid, $order = 'sharesquote ASC') {

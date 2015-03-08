@@ -7,7 +7,7 @@
 <input type="text" name="username" id="username" class="form-control" 
 	   value="<?= (isset($_POST['username'])) ? 
 		htmlspecialchars($_POST['username']) : '' ?>" autofocus />
-<?= "<span id='namealert' class='help-block alerts $hidden'>$name</span>" ?>
+<?= "<span id='namealert' class='help-block alerts $hidden'>$namealert</span>" ?>
 <span class="help-block">Please enter your login name</span>
 <br />
 

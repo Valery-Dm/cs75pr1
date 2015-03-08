@@ -66,4 +66,6 @@
 			</div>
 		</div>
 	</div>
-	<p class="lead center"><?= htmlspecialchars($message); ?></p>
+		<p id="topmessage" class="lead center"><?= htmlspecialchars($message); ?></p>
+		<div id="template">
+		

@@ -16,7 +16,13 @@
 		parse_str($_GET['q']);
 		$response = new Login($username, $password);
 		echo $_GET['login'] . '(' . json_encode($response) . ')';
-	} else {
-		//header('Location:main.php');
+	} elseif (isset($_GET['link'])) {
+		$url = parse_url($_GET['q']);
+		$pagename = (isset($url['query'])) ? 'register' : 'login';
+		$page = new Guest($pagename);
+		$response = array('body' => read($page->body, $page->alerts), 
+						  'title' => $page->title, 
+						  'message' => $page->message);
+		echo $_GET['link'] . '(' . json_encode($response) . ')';
 	}
 ?>

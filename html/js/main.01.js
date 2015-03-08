@@ -18,7 +18,7 @@ showresult = function (data) {
 		// this part for logout
 		window.location = data.url;
 	} else {
-		// show data if any
+		// show alerts if any
 		for (alert in data) {
 			if (data.hasOwnProperty(alert)) {
 				if (data[alert]) {

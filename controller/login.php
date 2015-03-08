@@ -1,5 +1,8 @@
 <?php
 	require_once('../controller/controller.php');
+	/*
+	* Class should be constructed with page name
+	*/
 	class Guest {
 		public $title;
 		public $message;
@@ -12,15 +15,15 @@
 				case 'login':	
 					$this->title = 'Login form';
 					$this->message = 'Please login';
-					$this->alerts = ['name' => '',
+					$this->alerts = ['namealert' => '',
 									 'hidden' => 'hidden'];
 					break;
 				case 'register':
 					$this->title = 
 					$this->message = 'Registration form';
-					$this->alerts = ['name' => '',
-									 'pass' => '',
-									 'conf' => '',
+					$this->alerts = ['namealert' => '',
+									 'passalert' => '',
+									 'confalert' => '',
 									 'hidden' => 'hidden'];	
 					break;
 			}
@@ -34,14 +37,17 @@
 	*/
 	class Login {
 		public $url = '';
-		public $namealert = '';
+		public $alerts = ['hidden' => '',
+						  'namealert' => '',
+						  'passalert' => '', 
+						  'confalert' => ''];
 
 		function __construct($name, $pass) {
 			$len = strlen($name);
 			if ($len < 3 or $len > 10 or strlen($pass) < 4) {
-				$this->namealert = 'Wrong user name or password';
+				$this->alerts['namealert'] = 'Wrong user name or password';
 			} else {
-				$this->namealert = $this->loguserin($name, $pass);
+				$this->alerts['namealert'] = $this->loguserin($name, $pass);
 			}
 		}
 		/*
@@ -79,8 +85,6 @@
 	* or alert messages to be shown on the Register page.
 	*/
 	class Register extends Login {
-		public $passalert = '';
-		public $confalert = '';
 
 		function __construct($name, $pass, $conf) {
 			// validate input
@@ -88,21 +92,21 @@
 			$cpass = $this->checkpassword($pass);
 			// populate variables
 			if ($cname) {
-				$this->namealert = $cname;
+				$this->alerts['namealert'] = $cname;
 			} elseif ($cpass) {
-				$this->passalert = $cpass;
+				$this->alerts['passalert'] = $cpass;
 			} elseif ($pass !== $conf) {
-				$this->confalert = 'passwords do not match';
+				$this->alerts['confalert'] = 'passwords do not match';
 			} else {
 				// check if user name already exists
 				$find = $this->finduser($name);
 				if ($find) {
-					$this->namealert = $find;
+					$this->alerts['namealert'] = $find;
 				} else {
 					// try to register and log user in
 					$register = $this->register($name, $pass);
 					if ($register) {
-						$this->namealert = $register;
+						$this->alerts['namealert'] = $register;
 					}
 				}
 			}

@@ -1,53 +1,70 @@
 /*
-*	Version 01. Will be used for login and register pages.
-*	Improve user experience via local form validation.
+* Version 01. Will be used for login and register pages.
+* Improve user experience via local form validation,
+* sending and getting JSON data.
 */
 
 // declare function names
 var main, validate, showresult, jsonpcall;
 
+/*
+* Take keys - username or password,
+* and validate their values
+*/
 validate = function (key, value) {
 	"use strict";
 	var namereg, passreg;
 
 	switch (key) {
-		case 'username':
-			// numbers and english letters only
-			// min 3 and max 10 symbols long
-			namereg = /^[^\W_]{3,10}$/;
-			return (namereg.test(value)) ? true : false;
-		case 'password':
-			// minimum 4 symbols, at least one number
-			// and at least one uppercase character
-			passreg = /(?=.*\d)(?=.*[A-Z])[\S]{4,}$/;
-			return (passreg.test(value)) ? true : false;
+	case 'username':
+		// numbers and english letters only
+		// min 3 and max 10 symbols long
+		namereg = /^[^\W_]{3,10}$/;
+		return (namereg.test(value)) ? true : false;
+	case 'password':
+		// 4 charactes as minimum, at least one number
+		// and at least one uppercase character
+		passreg = /(?=.*\d)(?=.*[A-Z])[\S]{4,}$/;
+		return (passreg.test(value)) ? true : false;
 	}
 };
 
-showresult = function (alerts) {
+/*
+* Show result (data) from JSON query
+*/
+showresult = function (data) {
 	"use strict";
 
 	var alert;
-	// login on success
-	if (alerts.url) {
-		window.location = alerts.url;
+	// if block of html code
+	if (data.body) {
+		// replace current elements
+		$('#template').html(data.body);
+		$('#topmessage').html(data.message);
+		document.title = 'CS75 finance: ' + data.title;
+	} else if (data.url) {
+		// login on success
+		window.location = data.url;
 	} else {
 		// show alerts if any
-		for (alert in alerts) {
-			if (alerts.hasOwnProperty(alert)) {
-				if (alerts[alert]) {
+		for (alert in data.alerts) {
+			if (data.alerts.hasOwnProperty(alert)) {
+				if (data.alerts[alert]) {
 					$('#' + alert).removeClass('hidden')
-								  .html(alerts[alert]);
+								  .html(data.alerts[alert]);
 				}
 			}
 		}
 	}
 };
 
-jsonpcall = function (form, data) {
+/*
+* Make JSONP request and get JSON data
+*/
+jsonpcall = function (callback, data) {
 	$.ajax({
 		url: 'index_json.php',
-		jsonp: form,
+		jsonp: callback,
 		dataType: 'jsonp',
 		cache: false,
 		crossDomain: true,
@@ -64,17 +81,27 @@ jsonpcall = function (form, data) {
 	});
 };
 
+/*
+* Catch links and form submits,
+* prevent their original behaviour,
+* and calling for jsonpcall function instead
+*/
 main = function () {
 	"use strict";
 
+	// catch link
+	$('#template').on('click', 'a', function (event) {
+		// prevent action and call for JSON
+		event.preventDefault();
+		jsonpcall('link', $(this).attr('href'));
+	});
 	// catch form submition
-	$('form').on('submit', function (event) {
+	$('#template').on('submit', 'form', function (event) {
 		// prevent sending POST query
 		event.preventDefault();
-
+		// prepare array and data for request
 		var alert,
 			alerts = {
-				url: false,
 				namealert: false,
 				passalert: false,
 				confalert: false

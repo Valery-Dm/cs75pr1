@@ -13,16 +13,22 @@
 
 	// on form submit
 	if (isset($_POST['username'])) {
-		$register = new Register($_POST);
+		if (count($_POST) == 2) {
+			$user = new Login($_POST['username'],
+							  $_POST['password']);
+		} elseif (count($_POST) == 3) {
+			$user = new Register($_POST['username'],
+								 $_POST['password'],
+								 $_POST['password_conf']);
+		}
+		
 		// login on success
-		if ($register->url) {
-			header('Location:'.$register->url);
+		if ($user->url) {
+			header('Location:'.$user->url);
+			$user = null;
 			exit;
 		}
-		$alerts = array('name' => $register->namealert,
-						'pass' => $register->passalert,
-						'conf' => $register->confalert,
-						'hidden' => '');
+		$alerts = $user->alerts;
 	}
 
 	// build page
