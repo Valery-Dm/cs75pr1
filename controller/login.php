@@ -12,20 +12,20 @@
 		function __construct($page) {
 			$this->body = $page;
 			switch($page) {
-				case 'login':	
-					$this->title = 'Login form';
-					$this->message = 'Please login';
-					$this->alerts = ['namealert' => '',
-									 'hidden' => 'hidden'];
-					break;
-				case 'register':
-					$this->title = 
-					$this->message = 'Registration form';
-					$this->alerts = ['namealert' => '',
-									 'passalert' => '',
-									 'confalert' => '',
-									 'hidden' => 'hidden'];	
-					break;
+			case 'login':	
+				$this->title = 'Login form';
+				$this->message = 'Please login';
+				$this->alerts = ['namealert' => '',
+								 'hidden' => 'hidden'];
+				break;
+			case 'register':
+				$this->title = 
+				$this->message = 'Registration form';
+				$this->alerts = ['namealert' => '',
+								 'passalert' => '',
+								 'confalert' => '',
+								 'hidden' => 'hidden'];	
+				break;
 			}
 		}
 	}

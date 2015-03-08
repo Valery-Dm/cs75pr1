@@ -42,6 +42,7 @@ showresult = function (data) {
 		$('#template').html(data.body);
 		$('#topmessage').html(data.message);
 		document.title = 'CS75 finance: ' + data.title;
+		$('#template').find('form :input:enabled:visible:first').focus();
 	} else if (data.url) {
 		// login on success
 		window.location = data.url;
@@ -88,7 +89,7 @@ jsonpcall = function (callback, data) {
 */
 main = function () {
 	"use strict";
-
+	
 	// catch link
 	$('#template').on('click', 'a', function (event) {
 		// prevent action and call for JSON

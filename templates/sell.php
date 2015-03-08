@@ -6,7 +6,7 @@
 	</div>
 
 	<div class="form-group <?= $hidden_d; ?>">
-		<form method="post">
+		<form id="form-sell" method="post">
 			<input list="sharesdata" name="shares" id="shares" class="form-control"
 				   value="<?= (isset($_POST['shares'])) ? $_POST['shares'] : '' ?>"
 				   autofocus />

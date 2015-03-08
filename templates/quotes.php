@@ -1,11 +1,11 @@
 <div class="col-md-3"></div>
 <div class="col-md-6 center">
-	<div class="result alerts <?= $hidden_m; ?>">
+	<div id="quote-message" class="result alerts <?= $hidden_m; ?>">
 		<h3><?= htmlspecialchars($message); ?></h3>
 	</div>
 
-	<div class="form-group result <?= $hidden_d; ?>">
-		<form method="post">
+	<div id="quote-result" class="form-group result <?= $hidden_d; ?>">
+		<form id="form-buy" method="post">
 			<p><?= 'Current price for ' 
 					. $data[0] . ' is $<strong>' 
 					. $data[1] . '</strong>'; ?></p>
@@ -25,7 +25,7 @@
 	</div>
 
 	<div class="form-group">
-		<form method="post">
+		<form id="form-quote" method="post">
 			<input type="text" name="quotes" id="quotes" class="form-control" 
 				   value="<?= (isset($_POST['quotes'])) ? 
 					htmlspecialchars($_POST['quotes']) : '' ?>" autofocus />
