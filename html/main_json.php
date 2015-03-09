@@ -5,6 +5,10 @@
 
 	header('content-type: application/json; charset=utf-8');
 
+	/*
+	* Take $queries array, form name and function name,
+	* and construct response for JSON
+	*/
 	function getresponse($queries, $form, $function) {
 		$query = [];
 		foreach ($queries as $q) {
@@ -16,6 +20,7 @@
 				'(' . json_encode($response) . ')';
 	}
 
+	// navigation functionality
 	if (isset($_GET['menu'])) {
 		// parse query
 		$url = parse_url($_GET['q']);
@@ -29,6 +34,7 @@
 						  'href' => $_GET['q'],
 						  'body' => $body);
 		echo $_GET['menu'] . '(' . json_encode($response) . ')';
+	// forms submition
 	} elseif (isset($_GET['form-quote'])) {
 		echo getresponse($_GET['q'], 'form-quote', 'quotes');
 	} elseif (isset($_GET['form-buy'])) {

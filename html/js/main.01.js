@@ -4,7 +4,6 @@
 *	local form validation etc.
 */
 
-
 // declare function names
 var $, main, jsonpcall, showresult;
 
@@ -32,8 +31,9 @@ showresult = function (data) {
 		$('#template').find('form :input:enabled:visible:first')
 					  .focus();
 	} else if (data.form) {
-		// hide any message shown
+		// hide any message if shown
 		$('.alerts').addClass('hidden');
+
 		// form selector
 		switch (data.form) {
 
@@ -63,13 +63,7 @@ showresult = function (data) {
 			}
 			break;
 
-		case 'form-buy':
-			// show result message
-			$('#quote-message')
-					.removeClass('hidden')
-					.find('h3').html(data.response.message);
-			break;
-		case 'form-sell':
+		default:
 			// show result message
 			$('#quote-message')
 					.removeClass('hidden')
@@ -95,10 +89,10 @@ jsonpcall = function (callback, data) {
 		},
 		success: function (response) {
 			showresult(response);
-		},
+		}/*,
 		error: function (error) {
-			console.log(error);
-		}
+			alert(error);
+		}*/
 	});
 };
 
@@ -109,7 +103,7 @@ jsonpcall = function (callback, data) {
 */
 main = function () {
 	"use strict";
-
+	var quotereg, quotename, data, id, quoteresp;
 	// menu items functionality.
 	// will ask server for html data
 	// and rebuild the page
@@ -124,12 +118,14 @@ main = function () {
 	$('#template').on('submit', 'form', function (event) {
 		// prevent sending POST query
 		event.preventDefault();
-		var quotereg, quotename, data, id, url, quoteresp, alert;
+		var alert;
 
 		// hide allerts
 		$('form .alerts').addClass('hidden');
+		// get form elements
 		data = $(this).serializeArray();
 		id = $(this).attr('id');
+
 		if (id === 'form-quote') {
 			// validate quote
 			quotereg = /[^a-zA-Z]/;
@@ -163,12 +159,6 @@ main = function () {
 		}
 		(alert) ? showresult(data) :
 				  jsonpcall($(this).attr('id'), data);
-		
-		/*
-		
-		url = "http://download.finance.yahoo.com/d/quotes.json?f=snl1&s=";
-		*/
-		
 	});
 };
 

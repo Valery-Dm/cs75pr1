@@ -174,4 +174,18 @@
 			}
 		}
 	}
+
+	/*
+	* Will be used to check if username is already exists
+	*/
+	class CheckUser extends Register {
+
+		function __construct($name) {
+			// only check username
+			$cname = $this->finduser($name);
+			if ($cname) {
+				$this->alerts['namealert'] = $cname;
+			}
+		}
+	}
 ?>

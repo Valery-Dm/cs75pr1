@@ -5,7 +5,7 @@
 */
 
 // declare function names
-var main, validate, showresult, jsonpcall;
+var $, main, validate, showresult, jsonpcall;
 
 /*
 * Take keys - username or password,
@@ -34,8 +34,8 @@ validate = function (key, value) {
 */
 showresult = function (data) {
 	"use strict";
-
 	var alert;
+
 	// if block of html code
 	if (data.body) {
 		// replace current elements
@@ -47,7 +47,9 @@ showresult = function (data) {
 		// login on success
 		window.location = data.url;
 	} else {
-		// show alerts if any
+		// first hide any previous alert
+		$('.alerts').addClass('hidden');
+		// then show alerts given
 		for (alert in data.alerts) {
 			if (data.alerts.hasOwnProperty(alert)) {
 				if (data.alerts[alert]) {
@@ -75,9 +77,6 @@ jsonpcall = function (callback, data) {
 		},
 		success: function (response) {
 			showresult(response);
-		},
-		error: function (error) {
-			console.log(error);
 		}
 	});
 };
@@ -89,15 +88,29 @@ jsonpcall = function (callback, data) {
 */
 main = function () {
 	"use strict";
-	
+
 	// catch link
-	$('#template').on('click', 'a', function (event) {
+	$('#template')
+		.on('click', 'a', function (event) {
 		// prevent action and call for JSON
 		event.preventDefault();
-		jsonpcall('link', $(this).attr('href'));
-	});
+		return jsonpcall('link', $(this).attr('href'));
+	})
+	// check username 'on the fly',
+	// while user is typing password
+		.on('focus', '#registerform :input[id="password"]', function () {
+		var value,
+			data = {alerts:{ namealert: false }};
+		value = $(':input:first').val();
+		if (!validate('username', value)) {
+			data.alerts.namealert = 'min 3, max 10 english\
+									letters or digits';
+			return showresult(data);
+		} 
+		return jsonpcall('checkname', 'username=' + value);
+	})
 	// catch form submition
-	$('#template').on('submit', 'form', function (event) {
+		.on('submit', 'form', function (event) {
 		// prevent sending POST query
 		event.preventDefault();
 		// prepare array and data for request
@@ -112,8 +125,6 @@ main = function () {
 
 		// validate input
 		if ($(this).attr('id') === "loginform") {
-			// first clear alert area 
-			$('#namealert').addClass('hidden');
 			if (!validate(form[0].name, form[0].value) ||
 				!validate(form[1].name, form[1].value)) {
 				// store alert
@@ -122,24 +133,18 @@ main = function () {
 				return jsonpcall('login', data);
 			}
 		} else if ($(this).attr('id') === "registerform") {
-			// first clear alerts if any 
-			$('#namealert').addClass('hidden');
-			$('#passalert').addClass('hidden');
-			$('#confalert').addClass('hidden');
 			if (!validate(form[0].name, form[0].value)) {
-				// store alert
-				alerts.namealert = 'min 3, max 10 english letters or digits';
+				alerts.namealert = 'min 3, max 10 english\
+									letters or digits';
 			} else if (!validate(form[1].name, form[1].value)) {
-				// store alert
 				alerts.passalert = 'requirements were not met';
 			} else if (form[1].value !== form[2].value) {
-				// store alert
 				alerts.confalert = 'passwords do not match';
 			} else {
 				return jsonpcall('register', data);
 			}
 		}
-		return showresult(alerts);
+		return showresult({alerts: alerts});
 	});
 };
 
