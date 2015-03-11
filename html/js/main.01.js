@@ -5,7 +5,7 @@
 */
 
 // declare function names
-var $, main, jsonpcall, showresult;
+var $, main, jsonpcall, showresult, yqlcall, yqlcallback;
 
 /*
 * Show result (data) from JSON query
@@ -95,6 +95,27 @@ jsonpcall = function (callback, data) {
 		}*/
 	});
 };
+var yqlcallback = function (data) {
+	//var result = data.query.results.quote;
+	console.log(data.query.results);
+};
+/**
+* Get quote via YQL query
+**/
+yqlcall = function (quote) {
+	
+	var url = 'https://query.yahooapis.com/v1/public/yql?',
+		options = {
+			q: 'select * from yahoo.finance.quote where symbol in ("'+quote.toUpperCase()+'")',
+			format: 'json',
+			diagnostics: 'true',
+			env: 'store://datatables.org/alltableswithkeys',
+			callback: 'yqlcallback'
+		};
+	$('<script type="text/javascript" src="' + url 
+	  + $.param(options) + '"></\script>').appendTo(document.body);
+	
+}
 
 /*
 * Catch links and form submits,
@@ -113,7 +134,7 @@ main = function () {
 			jsonpcall('menu', $(this).attr('href'));
 		}
 	});
-
+	
 	// catch form submition
 	$('#template').on('submit', 'form', function (event) {
 		// prevent sending POST query
@@ -134,6 +155,8 @@ main = function () {
 				data = {'form': 'form-quote',
 						'response': {'message': 'invalid quote'}};
 				alert = true;
+			} else {
+				return yqlcall(quotename);
 			}
 		} else if (id === 'form-buy') {
 			// don't call json if quantity is not valid
