@@ -1,4 +1,3 @@
-<div class="col-md-3"></div>
 <div class="col-md-6 center">
 	<div id="quote-message" class="result alerts <?= $hidden_m; ?>">
 		<h3><?= htmlspecialchars($message); ?></h3>
@@ -35,6 +34,9 @@
 				Get price
 			</button>
 		</form>
-	</div>	
+	</div>
+	<span class="loading hidden">
+			<img src="../model/ajax-loader.gif" alt="loading results" />
+	</span>
+	<div id="result-list"></div>
 </div>
-<div class="col-md-3"></div>

@@ -17,4 +17,4 @@ As I have already taken similar project in CS50 class
 I will also add JSON and Google’s Visualization API.
 Password (for almost all of existing users) is aA123.
 PS.
-I decided to use YQL for quotes (because it's newer way of making queries).
+I decided to use YQL for quotes (it seems more convenient).

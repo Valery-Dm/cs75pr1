@@ -22,4 +22,5 @@
 				<p>___________________</p>
 				<p id="topmessage" class="lead"><?= htmlspecialchars($message); ?></p>
 			</div>
+			<div class="col-md-3"></div>
 			<div id="template">

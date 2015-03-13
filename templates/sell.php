@@ -1,6 +1,4 @@
-<div class="col-md-3"></div>
 <div class="col-md-6 center">
-
 	<div id="quote-message" class="result alerts <?= $hidden_m; ?>" >
 		<h3><?= htmlspecialchars($message); ?></h3>
 	</div>
@@ -30,6 +28,4 @@
 			</button>
 		</form>
 	</div>
-
 </div>
-<div class="col-md-3"></div>

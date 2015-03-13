@@ -67,5 +67,5 @@
 		</div>
 	</div>
 		<p id="topmessage" class="lead center"><?= htmlspecialchars($message); ?></p>
+		<div class="col-md-3"></div>
 		<div id="template">
-		

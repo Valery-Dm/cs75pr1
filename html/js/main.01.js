@@ -5,7 +5,7 @@
 */
 
 // declare function names
-var $, main, jsonpcall, showresult, yqlcall, yqlcallback;
+var $, main, jsonpcall, showresult, yqlcall, yqlcallback, yqlchart, yqlchartback;
 
 /*
 * Show result (data) from JSON query
@@ -95,26 +95,114 @@ jsonpcall = function (callback, data) {
 		}*/
 	});
 };
-var yqlcallback = function (data) {
-	//var result = data.query.results.quote;
-	console.log(data.query.results);
+/**
+* Treat YQL result
+**/
+yqlcallback = function (data) {
+	if (typeof data.error != 'undefined' ||
+		data.query.results.quote.LastTradePriceOnly === '0.00') {
+		showresult({'form': 'form-quote',
+					'response': {'message': 'invalid quote'}});
+	} else {
+		var content = '<ul>';
+		$.each(data.query.results.quote, function (name, value) {
+			content += '<li><strong>'+name+'</strong>: '+value+'</li>';
+		 });
+		content += '</ul>';
+		$('#result-list').html(content);
+		$(".loading").addClass('hidden');
+	}
+};
+yqlchartback = function (data) {
+	var day, param, table = [], quote = data.query.results.quote;
+	//console.log(data);
+	for (day in quote) {
+		//console.log(quote[day]);
+		table.push([	quote[day].Date, 
+						parseFloat(quote[day].Low), 
+						parseFloat(quote[day].Open), 
+						parseFloat(quote[day].Close), 
+						parseFloat(quote[day].High)		]);
+	}
+	console.log(table);
+	$.getScript("https://www.google.com/jsapi", function(){
+		google.load("visualization", "1", {callback:drawChart, packages:["corechart"]});
+		//google.setOnLoadCallback(drawChart);
+		function drawChart() {
+			var data = google.visualization.arrayToDataTable(table, true),
+				options = {
+				  	legend:'none'
+				},
+				// google chart is not responsive, 
+				// so when you change browser window dimensions
+				// it will be changed on next function call
+				div = $('<div id="rchart" class="clear" style="width: 100%"></div>').appendTo('.container'),
+				chart = new google.visualization.CandlestickChart($('#rchart')[0]);
+			chart.draw(data, options);
+		}
+	});
+	$(".loading").addClass('hidden');
 };
 /**
-* Get quote via YQL query
+* Get quotes history. 
+* Arguments are - quote name, start and end dates (YYYY-MM-DD).
 **/
-yqlcall = function (quote) {
-	
-	var url = 'https://query.yahooapis.com/v1/public/yql?',
+yqlchart = function (quote, start, end) {
+	var url = 'https://query.yahooapis.com/v1/public/yql',
 		options = {
-			q: 'select * from yahoo.finance.quote where symbol in ("'+quote.toUpperCase()+'")',
+			q: 'SELECT * FROM yahoo.finance.historicaldata WHERE symbol = "'
+				+quote+'" AND startDate = "'+start+'" AND endDate = "'+end+'"',
+			format: 'json',
+			diagnostics: 'true',
+			env: 'store://datatables.org/alltableswithkeys',
+			callback: 'yqlchartback'
+		};
+	$(".loading").removeClass('hidden');
+	$.ajax({
+		url: url,
+		jsonp: 'yql',
+		dataType: 'jsonp',
+		cache: false,
+		crossDomain: true,
+		data: options
+	});
+}
+//http://chartapi.finance.yahoo.com/instrument/1.0/FB/chartdata;type=quote;range=1d/json/
+//https://github.com/yql/yql-tables/tree/master/yahoo/finance
+/**
+* Get quote via YQL query. 
+* Prepared for query multiple quotes passed as array
+**/
+yqlcall = function (quotes) {
+	var url = 'https://query.yahooapis.com/v1/public/yql',
+		options = {
+			q: 'SELECT * FROM yahoo.finance.quote WHERE symbol in ("'+quotes.join()+'")',
 			format: 'json',
 			diagnostics: 'true',
 			env: 'store://datatables.org/alltableswithkeys',
 			callback: 'yqlcallback'
 		};
-	$('<script type="text/javascript" src="' + url 
-	  + $.param(options) + '"></\script>').appendTo(document.body);
-	
+//https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20
+//yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22AAPL%22%20and%20
+//startDate%20%3D%20%222013-02-01%22%20and%20endDate%20%3D%20%222013-02-25%22&
+//format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=
+	// show loading gif
+	$(".loading").removeClass('hidden');
+	// Insert script tag into page is one way to query Yahoo
+	// $('<script type="text/javascript" src="' + url 
+	//  + $.param(options) + '"></\script>').appendTo(document.body);
+
+	// JSONP request. Yahoo calls for respond function
+	// which name is specified in data.callback (argument in the url).
+	// Success function inside ajax won't work.
+	$.ajax({
+		url: url,
+		jsonp: 'yql',
+		dataType: 'jsonp',
+		cache: false,
+		crossDomain: true,
+		data: options
+	});
 }
 
 /*
@@ -124,7 +212,8 @@ yqlcall = function (quote) {
 */
 main = function () {
 	"use strict";
-	var quotereg, quotename, data, id, quoteresp;
+	var quotereg, quotename, data, id;
+	
 	// menu items functionality.
 	// will ask server for html data
 	// and rebuild the page
@@ -135,6 +224,7 @@ main = function () {
 		}
 	});
 	
+
 	// catch form submition
 	$('#template').on('submit', 'form', function (event) {
 		// prevent sending POST query
@@ -156,7 +246,8 @@ main = function () {
 						'response': {'message': 'invalid quote'}};
 				alert = true;
 			} else {
-				return yqlcall(quotename);
+				//return yqlcall([quotename.toUpperCase()]);
+				return yqlchart(quotename.toUpperCase(),'2014-12-01', '2014-12-25');
 			}
 		} else if (id === 'form-buy') {
 			// don't call json if quantity is not valid

@@ -1,4 +1,3 @@
-<div class="col-md-3"></div>
 <div class="col-md-6 center">
 	<div class="form-group">
 		<form id="registerform" method="post">
@@ -32,4 +31,3 @@
 		</form>
 	</div>
 </div>
-<div class="col-md-3"></div>
