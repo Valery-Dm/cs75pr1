@@ -38,5 +38,31 @@
 	<span class="loading hidden">
 			<img src="../model/ajax-loader.gif" alt="loading results" />
 	</span>
-	<div id="result-list"></div>
+	<div id="result-block" class="hidden">
+		<div id="rheader" class="clear">
+			<hr />
+			<button>Add to Portfolio</button>
+			<h2 id="rname"></h2>
+			<h5 id="rlegend"></h5>
+			<p id="rquote" class="hidden"></p>
+			<h2 id="rprice"></h2>
+			<ul id="rselect">
+				<li class="active">Candle chart</li>
+				<li>History table</li>
+			</ul>
+			<hr />
+			<ul id="rmenu">
+				<li>1 day</li>
+				<li>5 days</li>
+				<li class="active">1 month</li>
+				<li>3 months</li>
+				<li>5 months</li>
+				<li>1 year</li>
+				<li>5 years</li>
+			</ul>
+			<p id="rrange"></p>
+		</div>
+		<div id="rchart"></div>
+		<div id="rfooter"></div>
+	</div>
 </div>

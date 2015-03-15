@@ -35,7 +35,7 @@ input, .btn{
 	border-radius: 0 17px !important;
 }
 .active a{
-	background-color: whitesmoke!important;
+	background-color: whitesmoke !important;
 }
 .center{
 	text-align:center;
@@ -69,4 +69,51 @@ input, .btn{
 }
 .muted-credit{
 	padding: 15px;
+}
+#rheader{
+	width: 100%;
+	color: #555;
+}
+#rheader p{
+	margin-bottom: 0;
+}
+#rprice{
+	margin-bottom: 10px;
+}
+#rname{
+	margin-top: 15px;
+}
+#rmenu, #rselect{
+	display: inline-flex;
+	list-style: none;
+	color: #555;
+	-webkit-padding-start: 0;
+}
+#rselect li{
+	padding: 0 20px;
+}
+#rmenu li{
+	padding: 5px 10px;
+	border-right: 1px solid #aaa;
+	border-bottom: 3px solid #aaa;
+}
+#rmenu li:first-child{
+	border-left: 1px solid #aaa;
+}
+#rmenu li:hover, #rselect li:hover{
+	color: #0af;
+}
+#rmenu .active, #rselect .active{
+	border-bottom: 3px solid #0af;
+	color: #0af;
+}
+#rfooter ul{
+	float: left;
+	padding: 0 30px;
+	color: #999;
+	list-style: none;
+	text-align: left;
+}
+#rfooter ul:last-child{
+	float: right;
 }
