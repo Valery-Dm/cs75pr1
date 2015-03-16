@@ -5,8 +5,10 @@
 */
 
 // declare function names
-var $, main, call_for_template, draw_template, yql_quote, yql_draw_quote, parsedate,
-	yql_table, yql_draw_table, finance_charts_call, finance_charts_json_callback;
+var $, main, call_for_template, draw_template, 
+	yql_quote, yql_draw_quote, parsedate,
+	yql_table, yql_draw_table, finance_charts_call, 
+	finance_charts_json_callback, visual_selector;
 
 /*
 * Show result (data) from template query
@@ -99,77 +101,47 @@ call_for_template = function (callback, data) {
 		}*/
 	});
 };
-/**
-* Treat YQL result for Quote
-**/
-yql_draw_quote = function (data) {
-	if (typeof data.error != 'undefined' ||
-		data.query.results.quote.LastTradePriceOnly === '0.00') {
-		draw_template({'form': 'form-quote',
-					'response': {'message': 'invalid quote'}});
-	} else {
-		var date = new Date().toUTCString(), 
-			quote = data.query.results.quote, 
-			price, color;
-			
-		/*
-		var	content = '<ul>';
-		$.each(quote, function (name, value) {
-			content += '<li><strong>'+name+'</strong>: '+value+'</li>';
-		 });
-		content += '</ul>';
-		$('#result-list').html(content);
-		*/
-		$('#result-block').removeClass('hidden');
-		$(".loading").addClass('hidden');
 
-		color = (quote.Change >= 0) ? 'green' : 'red';
-		price = quote.LastTradePriceOnly +
-					'<span id="rchange" style="color: ' +
-					color + '"> ' + quote.Change + '</span>';
-		$('#rname').html(quote.Name);
-		$('#rquote').html(quote.symbol);
-		$('#rlegend').html(quote.StockExchange + ": "
-						  +quote.Symbol + ' - ' + date);
-		$('#rprice').html(price);
-
-		finance_charts_call(quote.symbol.toUpperCase(),'1m');
-	}
-};
 /**
 * Draw table with Google visualisation API
 * and data returned by YQL query
 **/
 yql_draw_table = function (data) {
-	var day, content = [], quote = data.query.results.quote;
-	for (day in quote) {
-		content.push([	quote[day].Date, 
-						parseFloat(quote[day].Low), 
-						parseFloat(quote[day].Open), 
-						parseFloat(quote[day].Close), 
-						parseFloat(quote[day].High)		]);
-	}
-	$.getScript("https://www.google.com/jsapi", function(){
-		google.load("visualization", "1", {callback:drawTable, packages:["table"]});
-		function drawTable() {
-			var data = new google.visualization.DataTable(),
-				table = new google.visualization.Table($('#rchart')[0]),
-				options = {
-					width: '100%',
-					page: 'enable',
-					pageSize: 20,
-					sortColumn: 0,
-					sortAscending: false
-				};
-			data.addColumn('string', 'Date');
-			data.addColumn('number', 'Low');
-			data.addColumn('number', 'Open');
-			data.addColumn('number', 'Close');
-			data.addColumn('number', 'High');
-			data.addRows(content);
-			table.draw(data, options);
+	console.log(data);
+	if (data.query.count == 0) {
+		$('#rchart').html('No data');
+	} else {
+		var day, content = [], 
+			quote = data.query.results.quote;
+		for (day in quote) {
+			content.push([	quote[day].Date, 
+							parseFloat(quote[day].Low), 
+							parseFloat(quote[day].Open), 
+							parseFloat(quote[day].Close), 
+							parseFloat(quote[day].High)		]);
 		}
-	});
+		$.getScript("https://www.google.com/jsapi", function(){
+			google.load("visualization", "1", {callback:drawTable, packages:["table"]});
+			function drawTable() {
+				var data = new google.visualization.DataTable(),
+					table = new google.visualization.Table($('#rchart')[0]),
+					options = {
+						width: '100%',
+						page: 'enable',
+						pageSize: 20,
+						sortColumn: 0,
+						sortAscending: false
+					};
+				data.addColumn('string', 'Date');
+				data.addColumn('number', 'Low');
+				data.addColumn('number', 'Open');
+				data.addColumn('number', 'Close');
+				data.addColumn('number', 'High');
+				data.addRows(content);
+				table.draw(data, options);
+			}
+		});
+	}
 	$(".loading").addClass('hidden');
 };
 /**
@@ -205,9 +177,22 @@ yql_table = function (quote, start, end) {
 * returned by Yahoo.
 * Will create yyyy-mm-dd form
 **/
-parsedate = function (input) {
-	var d = input.toString();
-	return d.slice(0,4) + "-" + d.slice(4,6) + "-" + d.slice(6);
+parsedate = function (format, input) {
+	var result, d;
+	if (input > 1e9) {
+		result = new Date(input*1000).toISOString();
+		if (format == 'time') {
+			result = result.slice(11,16);
+		}
+		result = result.slice(0,10);
+	} else {
+		d = input.toString();
+		result = 
+			d.slice(0,4) + "-" + 
+			d.slice(4,6) + "-" + 
+			d.slice(6);
+	}
+	return result;
 }
 /**
 * Function name taken from Yahoo callback.
@@ -216,12 +201,30 @@ parsedate = function (input) {
 **/
 finance_charts_json_callback = function (data) {
 	console.log(data);
-	var node, rfooter, charttheme,
-		table = [], nodes = data.series,
+	var node, rfooter,
+		interval, lastprice,
+		min, max, period,
+		format = 'date',
+		table = [], 
+		nodes = data.series,
 		info = data.meta,
-		ranges = data.ranges,
-		period = parsedate(data.Date.min) + ' &mdash; '
-				 + parsedate(data.Date.max);
+		ranges = data.ranges, 
+		labels = Math.floor(nodes.length / 5);
+	// for ranges 1d and 5d
+	if (info.unit == 'MIN') {
+		interval = 'Timestamp';
+		lastprice = info.previous_close;
+		// for 1d only
+		if (!data['TimeStamp-Ranges']) {
+			format = 'time';
+		}
+	} else {
+		interval = 'Date';
+		lastprice = info.previous_close_price;
+	}
+	min = parsedate(format, data[interval].min);
+	max = parsedate(format, data[interval].max);
+	period = min + ' &mdash; ' + max;
 	rfooter = 
 			'<ul>'+
 				'<li>Open min: '+ ranges.open.min +'</li>'+
@@ -236,19 +239,8 @@ finance_charts_json_callback = function (data) {
 			'</ul>';
 	$('#rrange').html(period);
 	$('#rfooter').html(rfooter);
-	charttheme = {
-		chartArea: {width: '100%', height: '70%', left: 25},
-		titlePosition: 'in', titleTextStyle: {color: '#555'},
-		fontSize: 12,
-		series: {0:{color: '#0af', visibleInLegend: false}},
-		hAxis: {textPosition: 'out',
-				showTextEvery: 4,
-				textStyle: {color: '#999'}}, 
-		vAxis: {textPosition: 'out',
-				textStyle: {color: '#999'}}
-	};
 	for (node in nodes) {
-		table.push([	parsedate(nodes[node].Date), 
+		table.push([	parsedate(format, nodes[node][interval]), 
 						parseFloat(nodes[node].low), 
 						parseFloat(nodes[node].open), 
 						parseFloat(nodes[node].close), 
@@ -262,8 +254,22 @@ finance_charts_json_callback = function (data) {
 			var data = google.visualization.arrayToDataTable(table, true),
 				options = {
 				  	legend: 'none',
-					title: 'Previous close price ' + info.previous_close_price,
-					theme: charttheme
+					title: 'Previous close price ' + lastprice,
+					theme: {
+						chartArea: {width: '80%', height: '80%'},
+						titlePosition: 'in', titleTextStyle: {color: '#777'},
+						fontSize: 12,
+						series: {0:{color: '#0af'}},
+						hAxis: {
+							textPosition: 'out',
+							showTextEvery: labels,
+							textStyle: {color: '#777'}
+						}, 
+						vAxis: {
+							textPosition: 'out',
+							textStyle: {color: '#777'}
+						}
+					}
 				},
 				// google chart is not responsive, 
 				// so when you change browser window dimensions
@@ -292,7 +298,87 @@ finance_charts_call = function (quote, range) {
 		// This query returns as finance_charts_json_callback object.
 		// So I created draw function with the same name.
 	});
-}
+};
+
+/**
+* Will be called on clicks for Candle chart
+* History table selector and ranges Menu
+**/
+visual_selector = function (chart, quote, range) {
+	if (chart == 'Candle chart') {
+			finance_charts_call(quote.toUpperCase(), range);
+		} else {
+			var date = new Date(),
+				end = date.toISOString().substring(0,10),
+				start;
+			switch (range) {
+				case '1d':
+					date.setDate(date.getDate() - 1);
+					break;
+				case '5d':
+					date.setDate(date.getDate() - 5);
+					break;
+				case '1m':
+					date.setMonth(date.getMonth() - 1);
+					break;
+				case '3m':
+					date.setMonth(date.getMonth() - 3);
+					break;
+				case '5m':
+					date.setMonth(date.getMonth() - 5);
+					break;
+				case '1y':
+					date.setFullYear(date.getFullYear() - 1);
+					break;
+				case '5y':
+					date.setFullYear(date.getFullYear() - 5);
+					break;
+			}
+			start = date.toISOString().substring(0,10);
+			// Clear footer from Candle chart results
+			$('#rfooter').html('');
+			// Change 'from - to' label
+			$('#rrange').html(start + ' &mdash; ' + end);
+			yql_table(quote.toUpperCase(),start, end);
+		}
+};
+
+/**
+* Treat YQL result for Quote
+**/
+yql_draw_quote = function (data) {
+	if (typeof data.error != 'undefined' ||
+		data.query.results.quote.LastTradePriceOnly === '0.00') {
+		draw_template({'form': 'form-quote',
+					'response': {'message': 'invalid quote'}});
+	} else {
+		var date = new Date().toUTCString(), 
+			quote = data.query.results.quote, 
+			price, color;
+			
+		/*
+		var	content = '<ul>';
+		$.each(quote, function (name, value) {
+			content += '<li><strong>'+name+'</strong>: '+value+'</li>';
+		 });
+		content += '</ul>';
+		$('#result-list').html(content);
+		*/
+		$('#result-block').removeClass('hidden');
+		$(".loading").addClass('hidden');
+
+		color = (quote.Change >= 0) ? 'green' : 'red';
+		price = quote.LastTradePriceOnly +
+					'<span id="rchange" style="color: ' +
+					color + '"> ' + quote.Change + '</span>';
+		$('#rname').html(quote.Name);
+		$('#rquote').html(quote.symbol);
+		$('#rlegend').html(quote.StockExchange + ": "
+						  +quote.Symbol + ' - ' + date);
+		$('#rprice').html(price);
+	}
+};
+
 /**
 * Get quote via YQL query. 
 * Prepared for query multiple quotes passed as array
@@ -324,7 +410,8 @@ yql_quote = function (quotes) {
 		crossDomain: true,
 		data: options
 	});
-}
+	
+};
 
 /*
 * Catch links and form submits,
@@ -365,9 +452,12 @@ main = function () {
 						'response': {'message': 'invalid quote'}};
 				alert = true;
 			} else {
-				return yql_quote([quotename.toUpperCase()]);
-				//return yql_table(quotename.toUpperCase(),'2014-12-01', '2014-12-25');
-				//return finance_charts_call(quotename.toUpperCase(),'1m');
+				yql_quote([quotename.toUpperCase()]);
+				// Draw default visualization
+				visual_selector($('#rselect .active').html(), 
+								quotename.toUpperCase(), 
+								$('#rmenu .active').html());
+				return;
 			}
 		} else if (id === 'form-buy') {
 			// don't call json if quantity is not valid
@@ -394,62 +484,23 @@ main = function () {
 		(alert) ? draw_template(data) :
 				  call_for_template($(this).attr('id'), data);
 	});
-	// Quote result menu
-	$('#rselect li').on('click', function(){
-		var quotename = $('#rquote').html();
+	// Chart / table selector
+	$('#rselect li').on('click', function () {
 		$('#rselect li').removeClass('active');
 		$(this).addClass('active');
-		if ($(this).html() == 'Candle chart') {
-			finance_charts_call(quotename.toUpperCase(),'1m');
-		} else {
-			yql_table(quotename.toUpperCase(),'2014-12-01', '2014-12-25');
-		}
+		visual_selector($(this).html(), 
+						$('#rquote').html(), 
+						$('#rmenu .active').html());
 	});
-	var response = { "meta" :
- {
-  "uri" :"/instrument/1.0/FB/chartdata;type=quote;range=1m/json/?chart=jQuery21306741342437453568_1426419505074&_=1426419505075",
-  "ticker" : "fb",
-  "Company-Name" : "Facebook, Inc.",
-  "Exchange-Name" : "NMS",
-  "unit" : "DAY",
-  "timestamp" : "",
-  "first-trade" : "20120518",
-  "last-trade" : "20150313",
-  "currency" : "USD",
-  "previous_close_price" : 76.2300
- }
- ,
- "Date" : {"min" :20150213,"max" :20150313 }
- ,
- "labels" : [20150213,20150217,20150223,20150302,20150309 ]
- ,
- "ranges" : {"close" : {"min" :75.6000,"max" :81.2100 },"high" : {"min" :76.4800,"max" :81.9900 },"low" : {"min" :75.0800,"max" :81.0500 },"open" : {"min" :75.3000,"max" :81.2300 },"volume" : {"min" :16015600,"max" :45851200 } }
- ,
- "series" : [
- { "Date" :20150213,"close" :75.7400,"high" :76.4800,"low" :75.5000,"open" :76.4600,"volume" :18621900 } 
-, { "Date" :20150217,"close" :75.6000,"high" :76.9100,"low" :75.0800,"open" :75.3000,"volume" :25254400 } 
-, { "Date" :20150218,"close" :76.7100,"high" :76.9000,"low" :75.4500,"open" :75.9400,"volume" :22426400 } 
-, { "Date" :20150219,"close" :79.4200,"high" :79.8400,"low" :76.9500,"open" :76.9900,"volume" :45851200 } 
-, { "Date" :20150220,"close" :79.9000,"high" :80.3400,"low" :79.2000,"open" :79.5500,"volume" :36931700 } 
-, { "Date" :20150223,"close" :78.8400,"high" :80.1900,"low" :78.3800,"open" :79.9600,"volume" :24139100 } 
-, { "Date" :20150224,"close" :78.4500,"high" :79.4800,"low" :78.1000,"open" :78.5000,"volume" :18897100 } 
-, { "Date" :20150225,"close" :79.5600,"high" :80.2000,"low" :78.5000,"open" :78.5000,"volume" :25593800 } 
-, { "Date" :20150226,"close" :80.4100,"high" :81.3700,"low" :79.7200,"open" :79.8800,"volume" :31111900 } 
-, { "Date" :20150227,"close" :78.9700,"high" :81.2300,"low" :78.6200,"open" :80.6800,"volume" :30635700 } 
-, { "Date" :20150302,"close" :79.7500,"high" :79.8600,"low" :78.5200,"open" :79.0000,"volume" :21604400 } 
-, { "Date" :20150303,"close" :79.6000,"high" :79.7000,"low" :78.5200,"open" :79.6100,"volume" :18567300 } 
-, { "Date" :20150304,"close" :80.9000,"high" :81.1500,"low" :78.8500,"open" :79.3000,"volume" :28014500 } 
-, { "Date" :20150305,"close" :81.2100,"high" :81.9900,"low" :81.0500,"open" :81.2300,"volume" :27773300 } 
-, { "Date" :20150306,"close" :80.0100,"high" :81.3300,"low" :79.8300,"open" :80.9000,"volume" :24332500 } 
-, { "Date" :20150309,"close" :79.4400,"high" :79.9100,"low" :78.6300,"open" :79.6800,"volume" :18890800 } 
-, { "Date" :20150310,"close" :77.5500,"high" :79.2600,"low" :77.5500,"open" :78.5000,"volume" :22832300 } 
-, { "Date" :20150311,"close" :77.5700,"high" :78.4300,"low" :77.2600,"open" :77.8000,"volume" :20119700 } 
-, { "Date" :20150312,"close" :78.9300,"high" :79.0500,"low" :77.9100,"open" :78.1000,"volume" :16015600 } 
-, { "Date" :20150313,"close" :78.0500,"high" :79.3800,"low" :77.6800,"open" :78.6000,"volume" :18457000 } 
-
-]
-};
-	//finance_charts_json_callback( response );
+	// Ranges menu
+	$('#rmenu li').on('click', function () {
+		$('#rmenu li').removeClass('active');
+		$(this).addClass('active');
+		visual_selector($('#rselect .active').html(), 
+						$('#rquote').html(), 
+						$(this).html());
+	});
+	
 };
 
 // get started

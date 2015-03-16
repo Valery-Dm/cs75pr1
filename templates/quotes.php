@@ -52,13 +52,13 @@
 			</ul>
 			<hr />
 			<ul id="rmenu">
-				<li>1 day</li>
-				<li>5 days</li>
-				<li class="active">1 month</li>
-				<li>3 months</li>
-				<li>5 months</li>
-				<li>1 year</li>
-				<li>5 years</li>
+				<li class="active">1d</li>
+				<li>5d</li>
+				<li>1m</li>
+				<li>3m</li>
+				<li>5m</li>
+				<li>1y</li>
+				<li>5y</li>
 			</ul>
 			<p id="rrange"></p>
 		</div>
