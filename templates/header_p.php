@@ -67,5 +67,9 @@
 		</div>
 	</div>
 		<p id="topmessage" class="lead center"><?= htmlspecialchars($message); ?></p>
+		<span id="pageload" class="loading hidden">
+			<img src="../model/ajax-loader.gif" alt="loading results" />
+		</span>
 		<div class="col-md-3"></div>
 		<div id="template">
+			

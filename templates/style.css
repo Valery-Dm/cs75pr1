@@ -1,3 +1,4 @@
+/* Main elements */
 body, html{
 	margin:0;
 	width:100%;
@@ -19,17 +20,15 @@ h2, h3{
 input, .btn{
 	border-radius: 3px 15px !important;
 }
+/* Classes */
 .wrap{
 	min-height: 100%;
 	height: auto !important;
-	margin:0 auto -60px;
+	margin: 0 auto -60px;
 }
 .nojava{
 	float: left;
 	padding-left: 3%;
-}
-#footer, #push{
-	height: 60px;
 }
 .nav li a{
 	border-radius: 0 17px !important;
@@ -69,6 +68,16 @@ input, .btn{
 }
 .muted-credit{
 	padding: 15px;
+}
+.loading{
+	display: block !important;
+}
+/* IDs */
+#footer, #push{
+	height: 60px;
+}
+#rheader ul{
+	padding-left: 0 !important;
 }
 #rheader{
 	width: 100%;

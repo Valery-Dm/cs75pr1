@@ -1,4 +1,5 @@
 <div class="col-md-6 center">
+
 	<div id="quote-message" class="result alerts <?= $hidden_m; ?>">
 		<h3><?= htmlspecialchars($message); ?></h3>
 	</div>
@@ -35,13 +36,13 @@
 			</button>
 		</form>
 	</div>
-	<span class="loading hidden">
+	<span id="quoteload" class="loading hidden">
 			<img src="../model/ajax-loader.gif" alt="loading results" />
 	</span>
 	<div id="result-block" class="hidden">
-		<div id="rheader" class="clear">
+		<div id="rheader">
 			<hr />
-			<button>Add to Portfolio</button>
+			<button id="rbtn" class="btn">Add to Portfolio</button>
 			<h2 id="rname"></h2>
 			<h5 id="rlegend"></h5>
 			<p id="rquote" class="hidden"></p>
@@ -62,6 +63,9 @@
 			</ul>
 			<p id="rrange"></p>
 		</div>
+		<span id="vizload" class="loading hidden">
+			<img src="../model/ajax-loader.gif" alt="loading results" />
+		</span>
 		<div id="rchart"></div>
 		<div id="rfooter"></div>
 	</div>
